@@ -253,7 +253,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
     }
   };
 
-  const shareOnWhatsApp = () => {
+ const shareOnWhatsApp = () => {
     if (!checkoutData) return;
     const itemsSummary = cart.map(i => `• ${i.name} (x${i.qty}) - ₹${i.price * i.qty}`).join('%0A');
     const msg = `*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - पर्चा*%0A` +
@@ -262,9 +262,16 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
       `${itemsSummary}%0A` +
       `----------------------------%0A` +
       `*कुल राशि: ₹${checkoutData.totalAmount}*%0A` +
-      `दुकान: मेन मार्केट, रतिया | मो: 8307465719%0A` +
+      `दुकान: मेन मार्केट, रतिया | मो: 83074-65719, 93574-04458%0A` +
       `धन्यवाद! फिर पधारें 🙏`;
-    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+
+    // Agar customer phone number available ho:
+    const cleanPhone = (checkoutData.phone || '').replace(/[^0-9]/g, '');
+    const targetUrl = cleanPhone.length === 10
+      ? `https://api.whatsapp.com/send?phone=91${cleanPhone}&text=${msg}`
+      : `https://api.whatsapp.com/send?text=${msg}`;
+
+    window.open(targetUrl, '_blank');
   };
 
   const handleAddItem = (e) => {
