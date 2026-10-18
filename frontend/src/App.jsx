@@ -268,7 +268,7 @@ export default function App() {
   const [checkoutData, setCheckoutData] = useState(null);
 
   const apiBase = "https://ganesh-crockery-backend.onrender.com";
-  const storeUrl = typeof window !== 'undefined' ? window.location.origin : 'https://ganesh-crockery-app.vercel.app';
+  const storeUrl = "https://ganesh-crockery-cmn7ubdt9-crest11.vercel.app/";
 
   useEffect(() => {
     fetch(`${apiBase}/api/products`)
