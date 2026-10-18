@@ -1,0 +1,68 @@
+[
+  {
+    "id": 2,
+    "name": "Tri-Ply Heavy Stainless Steel Kadhai (26cm)",
+    "category": "कड़ाही",
+    "company": "Prestige",
+    "price": 1399,
+    "mrp": 1799,
+    "badge": "22% OFF",
+    "image": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80",
+    "desc": "3-layer base with heat-resistant steel handles."
+  },
+  {
+    "id": 3,
+    "name": "Hard Anodized Heavy Concave Roti Tawa",
+    "category": "तवा",
+    "company": "Hawkins",
+    "price": 649,
+    "mrp": 850,
+    "badge": "Hot Deal",
+    "image": "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=500&auto=format&fit=crop&q=80",
+    "desc": "Non-toxic surface, gas stove compatible."
+  },
+  {
+    "id": 4,
+    "name": "Laser Embossed Steel Dabba Set (5 Pieces)",
+    "category": "डिब्बे",
+    "company": "Patanjali / Local",
+    "price": 1150,
+    "mrp": 1450,
+    "badge": "Kitchen Pack",
+    "image": "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=500&auto=format&fit=crop&q=80",
+    "desc": "Heavy gauge airtight storage boxes."
+  },
+  {
+    "id": 5,
+    "name": "Diamond Cut Crystal Drinking Glasses (Set of 6)",
+    "category": "गिलास",
+    "company": "Ocean",
+    "price": 380,
+    "mrp": 520,
+    "badge": "Popular",
+    "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80",
+    "desc": "Lead-free sparkling clear glass tumblers."
+  },
+  {
+    "id": 6,
+    "name": "Royal Ceramic Gold-Rim Cup & Saucer (6 Pcs)",
+    "category": "क्रॉकरी",
+    "company": "Clay Craft",
+    "price": 799,
+    "mrp": 1050,
+    "badge": "Gift Special",
+    "image": "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500&auto=format&fit=crop&q=80",
+    "desc": "Premium bone-china finish with gold detailing."
+  },
+  {
+    "id": 7,
+    "name": "Cutlery Set with Revolving Stand (24 Pcs)",
+    "category": "कटलरी",
+    "company": "King Steel",
+    "price": 599,
+    "mrp": 799,
+    "badge": "Essential",
+    "image": "https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?w=500&auto=format&fit=crop&q=80",
+    "desc": "Mirror polish spoons and forks with stand."
+  }
+]
