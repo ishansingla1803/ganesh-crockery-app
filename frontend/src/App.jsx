@@ -142,8 +142,8 @@ export default function App() {
   const [isCustomCatMode, setIsCustomCatMode] = useState(false);
   const [checkoutData, setCheckoutData] = useState(null);
 
-  const apiBase = `http://${window.location.hostname}:5000`;
- const storeUrl = `http://10.179.58.77:5173`;
+const apiBase = "https://ganesh-crockery-backend.onrender.com";
+ const storeUrl = window.location.origin;
 
   useEffect(() => {
     fetch(`${apiBase}/api/products`)
