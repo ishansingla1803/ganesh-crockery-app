@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 
+const CATEGORY_MAP = {
+  "कुकर": "Cookers",
+  "कड़ाही": "Kadhai & Woks",
+  "तवा": "Tawa & Pans",
+  "डिब्बे": "Storage Boxes",
+  "गिलास": "Glassware",
+  "क्रॉकरी": "Crockery",
+  "कटलरी": "Cutlery",
+  "गिफ्ट आईटम": "Gift Items"
+};
+
 const TRANSLATIONS = {
   hi: {
     tagline: "करण्डी वालों की बर्तनों की दुकान",
@@ -10,7 +21,6 @@ const TRANSLATIONS = {
     ownerPanel: "🔐 मालिक पैनल",
     searchPlaceholder: "🔍 कुकर, कड़ाही, ब्रांड, डिब्बे सर्च करें...",
     allProducts: "सभी सामान",
-    bestseller: "बेस्टसेलर",
     addToOrder: "+ ऑर्डर में जोड़ें",
     itemsSelected: "सामान चुने गए",
     totalAmount: "कुल राशि",
@@ -23,7 +33,7 @@ const TRANSLATIONS = {
     noItemFound: "इस कैटेगरी या सर्च में कोई सामान नहीं मिला!",
     seeAll: "सभी सामान देखें",
     ownerLoginTitle: "🔐 दुकान मालिक लॉगिन",
-    ownerPinDesc: "नया सामान, रेट व UPI QR बदलने के लिए पिन डालें (Default: 1234)",
+    ownerPinDesc: "पिन डालें (Default: 1234)",
     loginBtn: "लॉगिन करें",
     addNewTab: "+ नया सामान",
     manageTab: "✏️ स्टॉक एडिट",
@@ -34,10 +44,10 @@ const TRANSLATIONS = {
     category: "कैटेगरी",
     chooseFromList: "📋 लिस्ट से चुनें",
     typeNewCategory: "✍️ नई कैटेगरी टाइप करें",
-    newCategoryPlaceholder: "नई कैटेगरी लिखें (उदा: थर्मस, स्टील बाल्टी...)",
+    newCategoryPlaceholder: "नई कैटेगरी लिखें...",
     sellingPrice: "बेचने का रेट (₹) *",
     mrp: "MRP (₹)",
-    uploadPhoto: "📷 फोटो अपलोड करें (कैमरा या गैलरी से)",
+    uploadPhoto: "📷 फोटो अपलोड करें",
     photoReady: "✓ फोटो तैयार है!",
     saveToStore: "+ दुकान में सेव करें",
     editItemTitle: "✏️ सामान एडिट करें",
@@ -46,34 +56,33 @@ const TRANSLATIONS = {
     alertNamePrice: "कृपया सामान का नाम और रेट ज़रूर भरें!",
     alertAdded: "सामान सफलतापूर्वक डेटाबेस में सेव हो गया!",
     alertWrongPin: "गलत पिन! (सही पिन: 1234)",
-    alertDeleted: "सामान दुकान की लिस्ट से हमेशा के लिए हटा दिया गया!",
+    alertDeleted: "सामान हटा दिया गया!",
     alertConfirmDelete: "क्या आप सच में इस सामान को हटाना चाहते हैं?",
-    alertUpdated: "सामान के विवरण डेटाबेस में अपडेट हो गए!",
+    alertUpdated: "सामान अपडेट हो गया!",
     serverError: "बिलिंग सर्वर से कनेक्ट नहीं हो सका!"
   },
   en: {
-    tagline: "Karandi Walon Ki Bartan Shop",
+    tagline: "Karandi's Premium Kitchenware Store",
     shopName: "Shri Ganesh Crockery & Gift House",
     gstin: "GSTIN",
     location: "Main Market, Ratia | M: 83074-65719, 70159-64832",
     call: "📞 Call Now",
     ownerPanel: "🔐 Owner Panel",
-    searchPlaceholder: "🔍 Search cooker, kadhai, brand, storage box...",
+    searchPlaceholder: "🔍 Search cookers, pans, containers, dinnerware...",
     allProducts: "All Items",
-    bestseller: "Bestseller",
     addToOrder: "+ Add to Order",
     itemsSelected: "items selected",
     totalAmount: "Total Amount",
     viewBill: "View Bill & QR ➔",
-    billSummary: "Counter Invoice & Bill",
+    billSummary: "Store Bill & Invoice",
     orderNo: "Order ID",
     scanToPay: "Scan QR Code to Pay Instantly",
-    payViaApp: "Pay via GPay / PhonePe UPI",
+    payViaApp: "Pay with UPI (GPay / PhonePe)",
     shareWhatsApp: "📲 Share Bill on WhatsApp",
-    noItemFound: "No items found for this category or search!",
+    noItemFound: "No items found matching your search!",
     seeAll: "View All Items",
     ownerLoginTitle: "🔐 Store Owner Login",
-    ownerPinDesc: "Enter secret PIN to manage stock and QR settings (Default: 1234)",
+    ownerPinDesc: "Enter secret PIN (Default: 1234)",
     loginBtn: "Login to Dashboard",
     addNewTab: "+ New Item",
     manageTab: "✏️ Edit Stock",
@@ -84,10 +93,10 @@ const TRANSLATIONS = {
     category: "Category",
     chooseFromList: "📋 Select from List",
     typeNewCategory: "✍️ Type New Category",
-    newCategoryPlaceholder: "Enter category name (e.g., Thermos, Steel Bucket...)",
+    newCategoryPlaceholder: "Enter category name...",
     sellingPrice: "Selling Price (₹) *",
     mrp: "MRP (₹)",
-    uploadPhoto: "📷 Upload Photo (Camera or Files)",
+    uploadPhoto: "📷 Upload Photo",
     photoReady: "✓ Photo Selected!",
     saveToStore: "+ Save to Catalog",
     editItemTitle: "✏️ Edit Item Details",
@@ -96,18 +105,133 @@ const TRANSLATIONS = {
     alertNamePrice: "Please fill in the Item Name and Selling Price!",
     alertAdded: "Item saved to database successfully!",
     alertWrongPin: "Incorrect PIN! (Default: 1234)",
-    alertDeleted: "Item permanently removed from database!",
+    alertDeleted: "Item removed from catalog!",
     alertConfirmDelete: "Are you sure you want to remove this item?",
-    alertUpdated: "Item details updated in database!",
+    alertUpdated: "Item details updated!",
     serverError: "Unable to connect to billing server!"
   }
 };
+
+const INITIAL_PRODUCTS = [
+  {
+    id: 1,
+    nameHi: "हॉकिन्स क्लासिक प्रेशर कुकर (5 लीटर)",
+    nameEn: "Hawkins Classic Pressure Cooker (5L)",
+    category: "कुकर",
+    company: "Hawkins",
+    price: 1850,
+    mrp: 2150,
+    badgeHi: "बेस्टसेलर",
+    badgeEn: "Bestseller",
+    image: "https://images.unsplash.com/photo-1584990347449-399a9cf3e218?w=500&auto=format&fit=crop&q=80",
+    descHi: "वर्जिन एल्युमिनियम बेस, मजबूत और टिकाऊ।",
+    descEn: "Virgin aluminum heavy base, safe and durable."
+  },
+  {
+    id: 2,
+    nameHi: "ट्राई-प्लाई स्टेनलेस स्टील कड़ाही (26cm)",
+    nameEn: "Tri-Ply Stainless Steel Kadhai (26cm)",
+    category: "कड़ाही",
+    company: "Prestige",
+    price: 1399,
+    mrp: 1799,
+    badgeHi: "22% छूट",
+    badgeEn: "22% OFF",
+    image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80",
+    descHi: "3-लेयर स्टील बेस, कूल-टच हैंडल के साथ।",
+    descEn: "3-layer heavy steel base with cool-touch handles."
+  },
+  {
+    id: 3,
+    nameHi: "हार्ड एनोडाइज्ड रोटी तवा",
+    nameEn: "Hard Anodized Concave Roti Tawa",
+    category: "तवा",
+    company: "Hawkins",
+    price: 649,
+    mrp: 850,
+    badgeHi: "हॉट डील",
+    badgeEn: "Hot Deal",
+    image: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=500&auto=format&fit=crop&q=80",
+    descHi: "4.5mm मोटा बेस, गैस स्टोव के लिए उत्तम।",
+    descEn: "4.5mm heavy gauge base, compatible with gas stoves."
+  },
+  {
+    id: 4,
+    nameHi: "स्टेनलेस स्टील लेज़र डिब्बा सेट (5 पीस)",
+    nameEn: "Stainless Steel Storage Container Set (5 Pcs)",
+    category: "डिब्बे",
+    company: "Patanjali / Local",
+    price: 1150,
+    mrp: 1450,
+    badgeHi: "किचन पैक",
+    badgeEn: "Kitchen Pack",
+    image: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=500&auto=format&fit=crop&q=80",
+    descHi: "एयरटाइट स्टील कंटेनर ग्रोसरी स्टोरेज के लिए।",
+    descEn: "Airtight steel containers for pantry and snacks storage."
+  },
+  {
+    id: 5,
+    nameHi: "डायमंड कट क्रिस्टल पानी के गिलास (6 पीस)",
+    nameEn: "Diamond Cut Crystal Water Glasses (Set of 6)",
+    category: "गिलास",
+    company: "Ocean",
+    price: 380,
+    mrp: 520,
+    badgeHi: "पॉपुलर",
+    badgeEn: "Popular",
+    image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80",
+    descHi: "लेड-फ्री चमकीले प्रीमियम पारदर्शी ग्लास।",
+    descEn: "Lead-free crystal clear water and juice tumblers."
+  },
+  {
+    id: 6,
+    nameHi: "रॉयल सिरेमिक गोल्ड कप-तश्तरी सेट (6 पीस)",
+    nameEn: "Royal Ceramic Gold Rim Tea Cup Set (6 Pcs)",
+    category: "क्रॉकरी",
+    company: "Clay Craft",
+    price: 799,
+    mrp: 1050,
+    badgeHi: "गिफ्ट स्पेशल",
+    badgeEn: "Gift Special",
+    image: "https://images.unsplash.com/photo-1517256064527-09c73fc73e38?w=500&auto=format&fit=crop&q=80",
+    descHi: "गोल्डन बॉर्डर वर्क के साथ बोन-चाइना टी-सेट।",
+    descEn: "Fine bone-china style tea set with delicate gold border."
+  },
+  {
+    id: 7,
+    nameHi: "स्टेनलेस स्टील कटलरी सेट स्टैंड के साथ (24 पीस)",
+    nameEn: "Stainless Steel Cutlery Set with Stand (24 Pcs)",
+    category: "कटलरी",
+    company: "King Steel",
+    price: 599,
+    mrp: 799,
+    badgeHi: "ज़रूरी",
+    badgeEn: "Essential",
+    image: "https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?w=500&auto=format&fit=crop&q=80",
+    descHi: "मिरर पॉलिश चम्मच, कांटे और स्टैंड।",
+    descEn: "Mirror-finish spoons and forks with revolving stand."
+  },
+  {
+    id: 8,
+    nameHi: "पीतल की शगुन पूजा थाली सेट",
+    nameEn: "Embossed Brass Shagun Pooja Thali Set",
+    category: "गिफ्ट आईटम",
+    company: "Handicrafts",
+    price: 1550,
+    mrp: 2100,
+    badgeHi: "शादी स्पेशल",
+    badgeEn: "Wedding Pick",
+    image: "https://images.unsplash.com/photo-1607344645866-009c320b5ab8?w=500&auto=format&fit=crop&q=80",
+    descHi: "शादी और त्योहारों के लिए पारंपरिक पीतल थाली सेट।",
+    descEn: "Traditional embossed brass puja thali set for ceremonies."
+  }
+];
 
 export default function App() {
   const [lang, setLang] = useState('hi');
   const t = TRANSLATIONS[lang];
 
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(INITIAL_PRODUCTS);
   const [selectedCat, setSelectedCat] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
@@ -116,7 +240,6 @@ export default function App() {
   const [adminPin, setAdminPin] = useState('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  // Admin Active Tab: 'ADD', 'MANAGE', 'SETTINGS', or 'STANDEE'
   const [adminTab, setAdminTab] = useState('ADD');
   const [editingProduct, setEditingProduct] = useState(null);
 
@@ -130,26 +253,39 @@ export default function App() {
   ]);
 
   const [newItem, setNewItem] = useState({
-    name: '',
+    nameHi: '',
+    nameEn: '',
     category: 'कुकर',
     customCategory: '',
     company: '',
     price: '',
     mrp: '',
     image: '',
-    badge: 'New Arrival'
+    badgeHi: 'नया माल',
+    badgeEn: 'New Arrival'
   });
   const [isCustomCatMode, setIsCustomCatMode] = useState(false);
   const [checkoutData, setCheckoutData] = useState(null);
 
-const apiBase = "https://ganesh-crockery-backend.onrender.com";
- const storeUrl = "https://ganesh-crockery-app.vercel.app/";
+  const apiBase = "https://ganesh-crockery-backend.onrender.com";
+  const storeUrl = typeof window !== 'undefined' ? window.location.origin : 'https://ganesh-crockery-app.vercel.app';
+
   useEffect(() => {
     fetch(`${apiBase}/api/products`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          setProducts(data);
+          // Normalize items
+          const normalized = data.map(item => ({
+            ...item,
+            nameHi: item.nameHi || item.name || '',
+            nameEn: item.nameEn || item.name || '',
+            descHi: item.descHi || item.desc || '',
+            descEn: item.descEn || item.desc || '',
+            badgeHi: item.badgeHi || item.badge || 'नया',
+            badgeEn: item.badgeEn || item.badge || 'New'
+          }));
+          setProducts(normalized);
           const uniqueCats = [...new Set(data.map(p => p.category))];
           setCategoriesList(prev => [...new Set([...prev, ...uniqueCats])]);
         }
@@ -186,10 +322,10 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
       });
       const data = await res.json();
       if (data.success) {
-        alert("✓ UPI ID और मर्चेंट नाम सेव हो गया!");
+        alert(lang === 'hi' ? "✓ सेटिंग्स सेव हो गई!" : "✓ Settings saved successfully!");
       }
     } catch (err) {
-      alert("Settings सेव नहीं हो सकी!");
+      alert("Settings error!");
     }
   };
 
@@ -206,11 +342,18 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
     }
   };
 
+  // Helper to get category name by current language
+  const getCatLabel = (cat) => {
+    if (lang === 'en') {
+      return CATEGORY_MAP[cat] || cat;
+    }
+    return cat;
+  };
+
   const filteredProducts = products.filter(item => {
     const matchCat = selectedCat === 'All' || item.category === selectedCat;
-    const matchSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                        item.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        (item.company && item.company.toLowerCase().includes(searchQuery.toLowerCase()));
+    const nameToSearch = `${item.nameHi || ''} ${item.nameEn || ''} ${item.company || ''} ${item.category || ''}`.toLowerCase();
+    const matchSearch = nameToSearch.includes(searchQuery.toLowerCase());
     return matchCat && matchSearch;
   });
 
@@ -252,36 +395,40 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
     }
   };
 
- const shareOnWhatsApp = () => {
+  const shareOnWhatsApp = () => {
     if (!checkoutData) return;
-    const itemsSummary = cart.map(i => `• ${i.name} (x${i.qty}) - ₹${i.price * i.qty}`).join('%0A');
-    const msg = `*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - पर्चा*%0A` +
-      `ऑर्डर नंबर: ${checkoutData.orderId}%0A` +
+    const itemsSummary = cart.map(i => {
+      const displayName = lang === 'hi' ? (i.nameHi || i.nameEn) : (i.nameEn || i.nameHi);
+      return `• ${displayName} (x${i.qty}) - ₹${i.price * i.qty}`;
+    }).join('%0A');
+
+    const heading = lang === 'hi' ? "*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - पर्चा*" : "*Shri Ganesh Crockery & Gift House - Invoice*";
+    const orderTxt = lang === 'hi' ? "ऑर्डर नंबर" : "Order ID";
+    const totalTxt = lang === 'hi' ? "कुल राशि" : "Total Amount";
+    const shopTxt = lang === 'hi' ? "मेन मार्केट, रतिया | मो: 83074-65719" : "Main Market, Ratia | M: 83074-65719";
+    const thanks = lang === 'hi' ? "धन्यवाद! फिर पधारें 🙏" : "Thank you! Visit again 🙏";
+
+    const msg = `${heading}%0A` +
+      `${orderTxt}: ${checkoutData.orderId}%0A` +
       `----------------------------%0A` +
       `${itemsSummary}%0A` +
       `----------------------------%0A` +
-      `*कुल राशि: ₹${checkoutData.totalAmount}*%0A` +
-      `दुकान: मेन मार्केट, रतिया | मो: 83074-65719, 93574-04458%0A` +
-      `धन्यवाद! फिर पधारें 🙏`;
+      `*${totalTxt}: ₹${checkoutData.totalAmount}*%0A` +
+      `${shopTxt}%0A` +
+      `${thanks}`;
 
-    // Agar customer phone number available ho:
-    const cleanPhone = (checkoutData.phone || '').replace(/[^0-9]/g, '');
-    const targetUrl = cleanPhone.length === 10
-      ? `https://api.whatsapp.com/send?phone=91${cleanPhone}&text=${msg}`
-      : `https://api.whatsapp.com/send?text=${msg}`;
-
-    window.open(targetUrl, '_blank');
+    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
   };
 
   const handleAddItem = (e) => {
     e.preventDefault();
-    if (!newItem.name || !newItem.price) {
+    if (!newItem.nameHi || !newItem.price) {
       alert(t.alertNamePrice);
       return;
     }
 
     const finalCategory = isCustomCatMode 
-      ? (newItem.customCategory.trim() || (lang === 'hi' ? "अन्य" : "Other"))
+      ? (newItem.customCategory.trim() || "अन्य")
       : newItem.category;
 
     if (!categoriesList.includes(finalCategory)) {
@@ -290,21 +437,24 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
 
     const item = {
       id: Date.now(),
-      name: newItem.name,
+      nameHi: newItem.nameHi,
+      nameEn: newItem.nameEn || newItem.nameHi,
       category: finalCategory,
       company: newItem.company || "General",
       price: Number(newItem.price),
       mrp: Number(newItem.mrp) || Number(newItem.price) + 200,
-      badge: newItem.badge || "New Arrival",
+      badgeHi: newItem.badgeHi || "नया",
+      badgeEn: newItem.badgeEn || "New",
       image: newItem.image || "https://images.unsplash.com/photo-1584990347449-399a9cf3e218?w=500&auto=format&fit=crop&q=80",
-      desc: lang === 'hi' ? "ताज़ा स्टॉक दुकान पर उपलब्ध है।" : "Fresh stock available in store."
+      descHi: "ताज़ा स्टॉक दुकान पर उपलब्ध है।",
+      descEn: "Fresh stock available in store."
     };
 
     const updated = [item, ...products];
     setProducts(updated);
     syncWithBackend(updated);
 
-    setNewItem({ name: '', category: 'कुकर', customCategory: '', company: '', price: '', mrp: '', image: '', badge: 'New Arrival' });
+    setNewItem({ nameHi: '', nameEn: '', category: 'कुकर', customCategory: '', company: '', price: '', mrp: '', image: '', badgeHi: 'नया माल', badgeEn: 'New Arrival' });
     setIsCustomCatMode(false);
     alert(t.alertAdded);
   };
@@ -439,7 +589,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
         />
       </div>
 
-      {/* 3. DYNAMIC CATEGORIES */}
+      {/* 3. DYNAMIC CATEGORIES (PROPER LANGUAGE SWITCH) */}
       <div style={{ maxWidth: '850px', margin: '0 auto', padding: '12px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button 
           onClick={() => setSelectedCat('All')}
@@ -473,7 +623,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
               color: selectedCat === cat ? '#FFFFFF' : '#222222'
             }}
           >
-            {cat}
+            {getCatLabel(cat)}
           </button>
         ))}
       </div>
@@ -489,77 +639,84 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
           </div>
         ) : (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '14px' }}>
-            {filteredProducts.map(item => (
-              <div 
-                key={item.id}
-                style={{ 
-                  background: '#FFFFFF', 
-                  borderRadius: '14px', 
-                  overflow: 'hidden', 
-                  boxShadow: '0 3px 12px rgba(0,0,0,0.08)', 
-                  border: '2px solid #E6D8C8',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  position: 'relative'
-                }}
-              >
-                <span style={{ 
-                  position: 'absolute', 
-                  top: '8px', 
-                  left: '8px', 
-                  background: '#6B0808', 
-                  color: '#FFF', 
-                  fontSize: '11px', 
-                  fontWeight: '900', 
-                  padding: '3px 9px', 
-                  borderRadius: '6px',
-                  zIndex: 1
-                }}>
-                  {item.badge}
-                </span>
+            {filteredProducts.map(item => {
+              const displayName = lang === 'hi' ? (item.nameHi || item.nameEn) : (item.nameEn || item.nameHi);
+              const displayDesc = lang === 'hi' ? (item.descHi || item.descEn) : (item.descEn || item.descHi);
+              const displayBadge = lang === 'hi' ? (item.badgeHi || item.badgeEn) : (item.badgeEn || item.badgeHi);
+              const displayCategory = getCatLabel(item.category);
 
-                <div>
-                  <img 
-                    src={item.image} 
-                    alt={item.name} 
-                    style={{ width: '100%', height: '145px', objectFit: 'cover' }} 
-                  />
-                  <div style={{ padding: '10px 12px 6px 12px' }}>
-                    <div style={{ fontSize: '11px', color: '#6B0808', fontWeight: '900', textTransform: 'uppercase' }}>
-                      {item.company} • {item.category}
+              return (
+                <div 
+                  key={item.id}
+                  style={{ 
+                    background: '#FFFFFF', 
+                    borderRadius: '14px', 
+                    overflow: 'hidden', 
+                    boxShadow: '0 3px 12px rgba(0,0,0,0.08)', 
+                    border: '2px solid #E6D8C8',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    position: 'relative'
+                  }}
+                >
+                  <span style={{ 
+                    position: 'absolute', 
+                    top: '8px', 
+                    left: '8px', 
+                    background: '#6B0808', 
+                    color: '#FFF', 
+                    fontSize: '11px', 
+                    fontWeight: '900', 
+                    padding: '3px 9px', 
+                    borderRadius: '6px',
+                    zIndex: 1
+                  }}>
+                    {displayBadge}
+                  </span>
+
+                  <div>
+                    <img 
+                      src={item.image} 
+                      alt={displayName} 
+                      style={{ width: '100%', height: '145px', objectFit: 'cover' }} 
+                    />
+                    <div style={{ padding: '10px 12px 6px 12px' }}>
+                      <div style={{ fontSize: '11px', color: '#6B0808', fontWeight: '900', textTransform: 'uppercase' }}>
+                        {item.company} • {displayCategory}
+                      </div>
+                      <h3 style={{ margin: '4px 0', fontSize: '14px', fontWeight: '800', color: '#000', lineHeight: '1.3' }}>
+                        {displayName}
+                      </h3>
+                      <div style={{ fontSize: '11px', color: '#444', lineHeight: '1.2' }}>{displayDesc}</div>
                     </div>
-                    <h3 style={{ margin: '4px 0', fontSize: '14px', fontWeight: '800', color: '#000', lineHeight: '1.3' }}>
-                      {item.name}
-                    </h3>
-                    <div style={{ fontSize: '11px', color: '#444', lineHeight: '1.2' }}>{item.desc}</div>
                   </div>
-                </div>
 
-                <div style={{ padding: '0 12px 12px 12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
-                    <span style={{ fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>₹{item.price}</span>
-                    <span style={{ fontSize: '12px', color: '#777', textDecoration: 'line-through', fontWeight: 'bold' }}>₹{item.mrp}</span>
+                  <div style={{ padding: '0 12px 12px 12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px', margin: '8px 0' }}>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>₹{item.price}</span>
+                      <span style={{ fontSize: '12px', color: '#777', textDecoration: 'line-through', fontWeight: 'bold' }}>₹{item.mrp}</span>
+                    </div>
+                    <button 
+                      onClick={() => addToCart(item)}
+                      style={{ 
+                        width: '100%', 
+                        background: '#6B0808', 
+                        color: '#FFFFFF', 
+                        border: 'none', 
+                        padding: '10px', 
+                        borderRadius: '8px', 
+                        fontWeight: '900', 
+                        fontSize: '13px', 
+                        cursor: 'pointer' 
+                      }}
+                    >
+                      {t.addToOrder}
+                    </button>
                   </div>
-                  <button 
-                    onClick={() => addToCart(item)}
-                    style={{ 
-                      width: '100%', 
-                      background: '#6B0808', 
-                      color: '#FFFFFF', 
-                      border: 'none', 
-                      padding: '10px', 
-                      borderRadius: '8px', 
-                      fontWeight: '900', 
-                      fontSize: '13px', 
-                      cursor: 'pointer' 
-                    }}
-                  >
-                    {t.addToOrder}
-                  </button>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>
@@ -632,7 +789,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                 <div style={{ margin: '12px 0', fontSize: '22px', fontWeight: '900', color: '#6B0808' }}>{t.totalAmount}: ₹{checkoutData.totalAmount}</div>
                 
                 <div style={{ background: '#F8F4EC', padding: '8px 12px', borderRadius: '8px', marginBottom: '12px', fontSize: '12px', color: '#444' }}>
-                  खाता धारक: <strong>{checkoutData.merchantName}</strong><br />
+                  {lang === 'hi' ? 'खाता धारक' : 'Account Holder'}: <strong>{checkoutData.merchantName}</strong><br />
                   UPI ID: <strong style={{ color: '#6B0808' }}>{checkoutData.upiId}</strong>
                 </div>
 
@@ -640,7 +797,6 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                   {t.payViaApp}
                 </a>
 
-                {/* WhatsApp Share Button */}
                 <button 
                   onClick={shareOnWhatsApp}
                   style={{ width: '100%', background: '#25D366', color: '#FFF', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer' }}
@@ -650,19 +806,22 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
               </div>
             ) : (
               <div>
-                {cart.map(item => (
-                  <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '2px solid #EEE' }}>
-                    <div>
-                      <div style={{ fontWeight: '800', fontSize: '14px', color: '#000' }}>{item.name}</div>
-                      <div style={{ fontSize: '13px', color: '#6B0808', fontWeight: '900' }}>₹{item.price} × {item.qty} = ₹{item.price * item.qty}</div>
+                {cart.map(item => {
+                  const displayName = lang === 'hi' ? (item.nameHi || item.nameEn) : (item.nameEn || item.nameHi);
+                  return (
+                    <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '2px solid #EEE' }}>
+                      <div>
+                        <div style={{ fontWeight: '800', fontSize: '14px', color: '#000' }}>{displayName}</div>
+                        <div style={{ fontSize: '13px', color: '#6B0808', fontWeight: '900' }}>₹{item.price} × {item.qty} = ₹{item.price * item.qty}</div>
+                      </div>
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button onClick={() => updateQty(item.id, -1)} style={{ padding: '6px 12px', background: '#222222', color: '#FFF', border: 'none', borderRadius: '6px', fontWeight: '900' }}>-</button>
+                        <span style={{ fontWeight: '900', fontSize: '15px', color: '#000' }}>{item.qty}</span>
+                        <button onClick={() => updateQty(item.id, 1)} style={{ padding: '6px 12px', background: '#222222', color: '#FFF', border: 'none', borderRadius: '6px', fontWeight: '900' }}>+</button>
+                      </div>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      <button onClick={() => updateQty(item.id, -1)} style={{ padding: '6px 12px', background: '#222222', color: '#FFF', border: 'none', borderRadius: '6px', fontWeight: '900' }}>-</button>
-                      <span style={{ fontWeight: '900', fontSize: '15px', color: '#000' }}>{item.qty}</span>
-                      <button onClick={() => updateQty(item.id, 1)} style={{ padding: '6px 12px', background: '#222222', color: '#FFF', border: 'none', borderRadius: '6px', fontWeight: '900' }}>+</button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
                 <div style={{ display: 'flex', justifyContent: 'space-between', margin: '16px 0', fontSize: '18px', fontWeight: '900' }}>
                   <span>{t.totalAmount}:</span>
                   <span style={{ color: '#6B0808' }}>₹{totalAmount}</span>
@@ -694,7 +853,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                 <p style={{ fontSize: '13px', color: '#222', margin: '0 0 16px 0', fontWeight: '600' }}>{t.ownerPinDesc}</p>
                 <input 
                   type="password" 
-                  placeholder="Enter 4-digit PIN" 
+                  placeholder="PIN" 
                   value={adminPin} 
                   onChange={e => setAdminPin(e.target.value)} 
                   style={{ width: '100%', padding: '12px', borderRadius: '8px', border: '2px solid #333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '15px', fontWeight: 'bold', marginBottom: '14px', boxSizing: 'border-box' }}
@@ -727,13 +886,21 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                 </div>
 
                 <form onSubmit={handleSaveEdit}>
-                  <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>{t.itemName}</label>
+                  <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>सामान का नाम (हिंदी)</label>
                   <input 
                     type="text" 
-                    value={editingProduct.name} 
-                    onChange={e => setEditingProduct({ ...editingProduct, name: e.target.value })} 
-                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333', backgroundColor: '#FFF', color: '#000', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', boxSizing: 'border-box' }}
+                    value={editingProduct.nameHi || ''} 
+                    onChange={e => setEditingProduct({ ...editingProduct, nameHi: e.target.value })} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333', backgroundColor: '#FFF', color: '#000', fontSize: '14px', fontWeight: 'bold', marginBottom: '8px', boxSizing: 'border-box' }}
                     required
+                  />
+
+                  <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>Item Name (English)</label>
+                  <input 
+                    type="text" 
+                    value={editingProduct.nameEn || ''} 
+                    onChange={e => setEditingProduct({ ...editingProduct, nameEn: e.target.value })} 
+                    style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333', backgroundColor: '#FFF', color: '#000', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', boxSizing: 'border-box' }}
                   />
 
                   <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>{t.brand}</label>
@@ -823,14 +990,23 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
 
                 {adminTab === 'ADD' && (
                   <form onSubmit={handleAddItem}>
-                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>{t.itemName}</label>
+                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>सामान का नाम (हिंदी) *</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Butterfly 3L Cooker, Milton Flask..." 
-                      value={newItem.name} 
-                      onChange={e => setNewItem({ ...newItem, name: e.target.value })} 
-                      style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '600', marginBottom: '12px', boxSizing: 'border-box' }}
+                      placeholder="उदा: बटरफ्लाई 3L कुकर" 
+                      value={newItem.nameHi} 
+                      onChange={e => setNewItem({ ...newItem, nameHi: e.target.value })} 
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '600', marginBottom: '8px', boxSizing: 'border-box' }}
                       required
+                    />
+
+                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>Item Name (English)</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Butterfly 3L Cooker" 
+                      value={newItem.nameEn} 
+                      onChange={e => setNewItem({ ...newItem, nameEn: e.target.value })} 
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '600', marginBottom: '10px', boxSizing: 'border-box' }}
                     />
 
                     <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>{t.brand}</label>
@@ -839,7 +1015,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                       placeholder="Hawkins, Prestige, Milton..." 
                       value={newItem.company} 
                       onChange={e => setNewItem({ ...newItem, company: e.target.value })} 
-                      style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '600', marginBottom: '12px', boxSizing: 'border-box' }}
+                      style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '600', marginBottom: '10px', boxSizing: 'border-box' }}
                     />
 
                     <div style={{ marginBottom: '12px' }}>
@@ -858,9 +1034,9 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                         <select 
                           value={newItem.category} 
                           onChange={e => setNewItem({ ...newItem, category: e.target.value })}
-                          style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '800', boxSizing: 'border-box' }}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '800', boxSizing: 'border-box' }}
                         >
-                          {categoriesList.map(c => <option key={c} value={c}>{c}</option>)}
+                          {categoriesList.map(c => <option key={c} value={c}>{getCatLabel(c)}</option>)}
                         </select>
                       ) : (
                         <input 
@@ -868,7 +1044,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                           placeholder={t.newCategoryPlaceholder} 
                           value={newItem.customCategory} 
                           onChange={e => setNewItem({ ...newItem, customCategory: e.target.value })} 
-                          style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #6B0808', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '700', boxSizing: 'border-box' }}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #6B0808', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '700', boxSizing: 'border-box' }}
                           autoFocus
                         />
                       )}
@@ -882,7 +1058,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                           placeholder="1450" 
                           value={newItem.price} 
                           onChange={e => setNewItem({ ...newItem, price: e.target.value })} 
-                          style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '800', boxSizing: 'border-box' }}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '800', boxSizing: 'border-box' }}
                           required
                         />
                       </div>
@@ -893,7 +1069,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                           placeholder="1750" 
                           value={newItem.mrp} 
                           onChange={e => setNewItem({ ...newItem, mrp: e.target.value })} 
-                          style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '800', boxSizing: 'border-box' }}
+                          style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: '800', boxSizing: 'border-box' }}
                         />
                       </div>
                     </div>
@@ -930,9 +1106,9 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                     {products.map(item => (
                       <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px', borderBottom: '1px solid #DDD', background: '#FAFAFA', borderRadius: '8px', marginBottom: '8px' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <img src={item.image} alt={item.name} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #CCC' }} />
+                          <img src={item.image} alt={item.nameHi} style={{ width: '45px', height: '45px', objectFit: 'cover', borderRadius: '6px', border: '1px solid #CCC' }} />
                           <div>
-                            <div style={{ fontWeight: '800', fontSize: '13px', color: '#000' }}>{item.name}</div>
+                            <div style={{ fontWeight: '800', fontSize: '13px', color: '#000' }}>{item.nameHi || item.nameEn}</div>
                             <div style={{ fontSize: '12px', color: '#6B0808', fontWeight: 'bold' }}>₹{item.price} <span style={{ textDecoration: 'line-through', color: '#888', fontSize: '11px' }}>₹{item.mrp}</span></div>
                           </div>
                         </div>
@@ -945,7 +1121,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                             ✏️ Edit
                           </button>
                           <button 
-                            onClick={() => handleDeleteProduct(item.id, item.name)}
+                            onClick={() => handleDeleteProduct(item.id, item.nameHi || item.nameEn)}
                             style={{ background: '#B91C1C', color: '#FFF', border: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer' }}
                           >
                             🗑️
@@ -968,7 +1144,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                     </label>
                     <input 
                       type="text" 
-                      placeholder="उदा: 9357404458@ybl या shreeganesh@okaxis" 
+                      placeholder="उदा: 9357404458@ybl" 
                       value={upiSettings.upiId} 
                       onChange={e => setUpiSettings({ ...upiSettings, upiId: e.target.value })} 
                       style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #8F0F0F', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: 'bold', marginBottom: '14px', boxSizing: 'border-box' }}
@@ -980,7 +1156,7 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                     </label>
                     <input 
                       type="text" 
-                      placeholder="उदा: Radhe Shyam / Shree Ganesh Crockery" 
+                      placeholder="उदा: Radhe Shyam" 
                       value={upiSettings.merchantName} 
                       onChange={e => setUpiSettings({ ...upiSettings, merchantName: e.target.value })} 
                       style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: 'bold', marginBottom: '16px', boxSizing: 'border-box' }}
@@ -1019,7 +1195,6 @@ const apiBase = "https://ganesh-crockery-backend.onrender.com";
                         मेन मार्केट, रतिया | मो: 83074-65719, 93574-04458
                       </div>
 
-                      {/* Dynamic Store Menu QR */}
                       <div style={{ background: '#FFFFFF', padding: '12px', display: 'inline-block', borderRadius: '14px', border: '3px solid #D4AF37' }}>
                         <img 
                           src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=7A0C0C&data=${encodeURIComponent(storeUrl)}`} 
