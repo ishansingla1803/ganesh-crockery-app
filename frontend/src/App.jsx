@@ -33,11 +33,11 @@ const TRANSLATIONS = {
     noItemFound: "इस कैटेगरी या सर्च में कोई सामान नहीं मिला!",
     seeAll: "सभी सामान देखें",
     ownerLoginTitle: "🔐 दुकान मालिक लॉगिन",
-    ownerPinDesc: "पिन डालें (Default: 1234)",
+    ownerPinDesc: "पिन डालें",
     loginBtn: "लॉगिन करें",
     addNewTab: "+ नया सामान",
     manageTab: "✏️ स्टॉक एडिट",
-    settingsTab: "⚙️ UPI सेटिंग",
+    settingsTab: "⚙️ UPI व पासवर्ड",
     standeeTab: "🖨️ काउंटर स्टैंडी",
     itemName: "सामान का नाम *",
     brand: "कंपनी / ब्रांड",
@@ -55,7 +55,7 @@ const TRANSLATIONS = {
     saveChanges: "✓ बदलाव सेव करें",
     alertNamePrice: "कृपया सामान का नाम और रेट ज़रूर भरें!",
     alertAdded: "सामान सफलतापूर्वक डेटाबेस में सेव हो गया!",
-    alertWrongPin: "गलत पिन! (सही पिन: 1234)",
+    alertWrongPin: "गलत पिन! कृपया सही पिन डालें।",
     alertDeleted: "सामान हटा दिया गया!",
     alertConfirmDelete: "क्या आप सच में इस सामान को हटाना चाहते हैं?",
     alertUpdated: "सामान अपडेट हो गया!",
@@ -82,11 +82,11 @@ const TRANSLATIONS = {
     noItemFound: "No items found matching your search!",
     seeAll: "View All Items",
     ownerLoginTitle: "🔐 Store Owner Login",
-    ownerPinDesc: "Enter secret PIN (Default: 1234)",
+    ownerPinDesc: "Enter secret PIN",
     loginBtn: "Login to Dashboard",
     addNewTab: "+ New Item",
     manageTab: "✏️ Edit Stock",
-    settingsTab: "⚙️ UPI Settings",
+    settingsTab: "⚙️ UPI & Security",
     standeeTab: "🖨️ Counter Standee",
     itemName: "Item Name *",
     brand: "Company / Brand",
@@ -104,7 +104,7 @@ const TRANSLATIONS = {
     saveChanges: "✓ Save Changes",
     alertNamePrice: "Please fill in the Item Name and Selling Price!",
     alertAdded: "Item saved to database successfully!",
-    alertWrongPin: "Incorrect PIN! (Default: 1234)",
+    alertWrongPin: "Incorrect PIN! Please try again.",
     alertDeleted: "Item removed from catalog!",
     alertConfirmDelete: "Are you sure you want to remove this item?",
     alertUpdated: "Item details updated!",
@@ -237,8 +237,17 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+  
+  // Dynamic Admin PIN (stored in localStorage with fallback to 1234)
+  const [savedOwnerPin, setSavedOwnerPin] = useState(() => {
+    return localStorage.getItem('sgc_owner_pin') || '1234';
+  });
   const [adminPin, setAdminPin] = useState('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+
+  // States to change password in Owner Panel
+  const [newPinInput, setNewPinInput] = useState('');
+  const [confirmPinInput, setConfirmPinInput] = useState('');
 
   const [adminTab, setAdminTab] = useState('ADD');
   const [editingProduct, setEditingProduct] = useState(null);
@@ -268,14 +277,17 @@ export default function App() {
   const [checkoutData, setCheckoutData] = useState(null);
 
   const apiBase = "https://ganesh-crockery-backend.onrender.com";
-  const storeUrl = "https://ganesh-crockery-cmn7ubdt9-crest11.vercel.app/";
+
+  // Standee will ALWAYS use your live Vercel URL
+  const storeUrl = typeof window !== 'undefined' && window.location.origin.includes('vercel.app')
+    ? window.location.origin
+    : "https://ganesh-crockery-cmn7ubdt9-crest11.vercel.app";
 
   useEffect(() => {
     fetch(`${apiBase}/api/products`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
-          // Normalize items
           const normalized = data.map(item => ({
             ...item,
             nameHi: item.nameHi || item.name || '',
@@ -295,7 +307,13 @@ export default function App() {
     fetch(`${apiBase}/api/settings`)
       .then(res => res.json())
       .then(data => {
-        if (data && data.upiId) setUpiSettings(data);
+        if (data) {
+          if (data.upiId) setUpiSettings(data);
+          if (data.ownerPin) {
+            setSavedOwnerPin(data.ownerPin);
+            localStorage.setItem('sgc_owner_pin', data.ownerPin);
+          }
+        }
       })
       .catch(err => console.error("Settings error:", err));
   }, []);
@@ -315,18 +333,50 @@ export default function App() {
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
+      const payload = { ...upiSettings, ownerPin: savedOwnerPin };
       const res = await fetch(`${apiBase}/api/settings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(upiSettings)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
       if (data.success) {
-        alert(lang === 'hi' ? "✓ सेटिंग्स सेव हो गई!" : "✓ Settings saved successfully!");
+        alert(lang === 'hi' ? "✓ UPI सेटिंग्स सफलतापूर्वक सेव हो गई!" : "✓ UPI settings saved successfully!");
       }
     } catch (err) {
       alert("Settings error!");
     }
+  };
+
+  // Change Admin PIN logic
+  const handleUpdatePin = async (e) => {
+    e.preventDefault();
+    if (!newPinInput || newPinInput.length < 4) {
+      alert(lang === 'hi' ? "पिन कम से कम 4 अंकों का होना चाहिए!" : "PIN must be at least 4 digits!");
+      return;
+    }
+    if (newPinInput !== confirmPinInput) {
+      alert(lang === 'hi' ? "दोनों पिन आपस में मेल नहीं खा रहे हैं!" : "PINs do not match!");
+      return;
+    }
+
+    setSavedOwnerPin(newPinInput);
+    localStorage.setItem('sgc_owner_pin', newPinInput);
+
+    // Save to backend too
+    try {
+      await fetch(`${apiBase}/api/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...upiSettings, ownerPin: newPinInput })
+      });
+    } catch (err) {
+      console.error("PIN sync error:", err);
+    }
+
+    setNewPinInput('');
+    setConfirmPinInput('');
+    alert(lang === 'hi' ? `✓ आपका नया पिन सफलतापूर्वक सेट हो गया: ${newPinInput}` : `✓ New PIN set successfully: ${newPinInput}`);
   };
 
   const toggleLanguage = () => {
@@ -342,7 +392,6 @@ export default function App() {
     }
   };
 
-  // Helper to get category name by current language
   const getCatLabel = (cat) => {
     if (lang === 'en') {
       return CATEGORY_MAP[cat] || cat;
@@ -589,7 +638,7 @@ export default function App() {
         />
       </div>
 
-      {/* 3. DYNAMIC CATEGORIES (PROPER LANGUAGE SWITCH) */}
+      {/* 3. DYNAMIC CATEGORIES */}
       <div style={{ maxWidth: '850px', margin: '0 auto', padding: '12px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button 
           onClick={() => setSelectedCat('All')}
@@ -860,8 +909,9 @@ export default function App() {
                 />
                 <button 
                   onClick={() => {
-                    if (adminPin === '1234') {
+                    if (adminPin === savedOwnerPin) {
                       setIsAdminLoggedIn(true);
+                      setAdminPin('');
                     } else {
                       alert(t.alertWrongPin);
                     }
@@ -1132,44 +1182,90 @@ export default function App() {
                   </div>
                 )}
 
-                {/* TAB 3: UPI SETTINGS */}
+                {/* TAB 3: UPI SETTINGS & PASSWORD CHANGE */}
                 {adminTab === 'SETTINGS' && (
-                  <form onSubmit={handleSaveSettings}>
-                    <p style={{ fontSize: '12px', color: '#555', margin: '0 0 14px 0', lineHeight: '1.4' }}>
-                      यहाँ अपनी दुकान की असली UPI ID (GPay / PhonePe / Paytm) डालें:
-                    </p>
+                  <div>
+                    {/* SECTION 1: UPI SETTINGS */}
+                    <form onSubmit={handleSaveSettings} style={{ marginBottom: '24px', borderBottom: '2px dashed #DDD', paddingBottom: '20px' }}>
+                      <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
+                        💳 UPI भुगतान सेटिंग (Payment Settings)
+                      </h3>
 
-                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>
-                      दुकान की असली UPI ID (VPA) *
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="उदा: 9357404458@ybl" 
-                      value={upiSettings.upiId} 
-                      onChange={e => setUpiSettings({ ...upiSettings, upiId: e.target.value })} 
-                      style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #8F0F0F', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: 'bold', marginBottom: '14px', boxSizing: 'border-box' }}
-                      required
-                    />
+                      <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>
+                        दुकान की असली UPI ID (VPA) *
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="उदा: 9357404458@ybl" 
+                        value={upiSettings.upiId} 
+                        onChange={e => setUpiSettings({ ...upiSettings, upiId: e.target.value })} 
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #8F0F0F', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', boxSizing: 'border-box' }}
+                        required
+                      />
 
-                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>
-                      खाता धारक / मर्चेंट का नाम *
-                    </label>
-                    <input 
-                      type="text" 
-                      placeholder="उदा: Radhe Shyam" 
-                      value={upiSettings.merchantName} 
-                      onChange={e => setUpiSettings({ ...upiSettings, merchantName: e.target.value })} 
-                      style={{ width: '100%', padding: '11px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: 'bold', marginBottom: '16px', boxSizing: 'border-box' }}
-                      required
-                    />
+                      <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>
+                        खाता धारक / मर्चेंट का नाम *
+                      </label>
+                      <input 
+                        type="text" 
+                        placeholder="उदा: Radhe Shyam" 
+                        value={upiSettings.merchantName} 
+                        onChange={e => setUpiSettings({ ...upiSettings, merchantName: e.target.value })} 
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333333', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '14px', fontWeight: 'bold', marginBottom: '14px', boxSizing: 'border-box' }}
+                        required
+                      />
 
-                    <button 
-                      type="submit" 
-                      style={{ width: '100%', background: '#1B5E20', color: '#FFFFFF', padding: '13px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '15px', cursor: 'pointer' }}
-                    >
-                      💾 UPI ID सेव करें
-                    </button>
-                  </form>
+                      <button 
+                        type="submit" 
+                        style={{ width: '100%', background: '#1B5E20', color: '#FFFFFF', padding: '11px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer' }}
+                      >
+                        💾 UPI ID सेव करें
+                      </button>
+                    </form>
+
+                    {/* SECTION 2: CHANGE ADMIN PIN PORTAL */}
+                    <form onSubmit={handleUpdatePin}>
+                      <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
+                        🔑 ओनर पिन बदलें (Change Admin PIN)
+                      </h3>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0 0 12px 0' }}>
+                        वर्तमान पिन: <strong>{savedOwnerPin}</strong>
+                      </p>
+
+                      <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>
+                        नया 4-अंकों का पिन (New Secret PIN) *
+                      </label>
+                      <input 
+                        type="password" 
+                        placeholder="उदा: 9876" 
+                        maxLength={6}
+                        value={newPinInput} 
+                        onChange={e => setNewPinInput(e.target.value)} 
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333', backgroundColor: '#FFF', color: '#000', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px', boxSizing: 'border-box' }}
+                        required
+                      />
+
+                      <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>
+                        नया पिन दोबारा डालें (Confirm New PIN) *
+                      </label>
+                      <input 
+                        type="password" 
+                        placeholder="उदा: 9876" 
+                        maxLength={6}
+                        value={confirmPinInput} 
+                        onChange={e => setConfirmPinInput(e.target.value)} 
+                        style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '2px solid #333', backgroundColor: '#FFF', color: '#000', fontSize: '14px', fontWeight: 'bold', marginBottom: '14px', boxSizing: 'border-box' }}
+                        required
+                      />
+
+                      <button 
+                        type="submit" 
+                        style={{ width: '100%', background: '#6B0808', color: '#FFFFFF', padding: '11px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer' }}
+                      >
+                        🔒 नया पासवर्ड सेव करें (Update PIN)
+                      </button>
+                    </form>
+                  </div>
                 )}
 
                 {/* TAB 4: COUNTER QR STANDEE POSTER */}
@@ -1195,11 +1291,12 @@ export default function App() {
                         मेन मार्केट, रतिया | मो: 83074-65719, 93574-04458
                       </div>
 
+                      {/* Standee QR with Live Vercel Domain */}
                       <div style={{ background: '#FFFFFF', padding: '12px', display: 'inline-block', borderRadius: '14px', border: '3px solid #D4AF37' }}>
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=7A0C0C&data=${encodeURIComponent(storeUrl)}`} 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&color=7A0C0C&data=${encodeURIComponent(storeUrl)}`} 
                           alt="Store QR Code" 
-                          style={{ width: '180px', height: '180px', display: 'block' }}
+                          style={{ width: '190px', height: '190px', display: 'block' }}
                         />
                       </div>
 
