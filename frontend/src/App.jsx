@@ -39,6 +39,7 @@ const TRANSLATIONS = {
     scanToPay: "QR स्कैन करके तुरंत भुगतान करें",
     payViaApp: "GPay / PhonePe से डायरेक्ट पे करें",
     shareWhatsApp: "📲 WhatsApp पर बिल भेजें",
+    downloadReceipt: "📥 पक्का बिल डाउनलोड करें (Print/PDF)",
     noItemFound: "इस कैटेगरी या सर्च में कोई सामान नहीं मिला!",
     seeAll: "सभी सामान देखें",
     ownerLoginTitle: "🔐 दुकान मालिक लॉगिन",
@@ -51,10 +52,9 @@ const TRANSLATIONS = {
     exchangeBannerTitle: "🔄 पुराने बर्तन लाओ - नया सामान ले जाओ!",
     exchangeBannerSub: "स्टील, एल्युमिनियम, पीतल, तांबे के पुराने बर्तन बाज़ार भाव पर बदलें",
     calculateExchange: "पुराना भाव जोड़ें",
-    oldUtensilDeduction: "पुराने बर्तनों की छूट",
-    perPiece: "प्रति पीस",
-    perKg: "प्रति किलो (KG)",
-    weight: "वज़न (KG)",
+    oldUtensilDeduction: "पुराने बर्तनों की कुल छूट",
+    bargainDiscount: "विशेष छूट / लेस (Less)",
+    addAnotherScrap: "+ दूसरी धातु जोड़ें",
     serverError: "बिलिंग सर्वर से कनेक्ट नहीं हो सका!"
   },
   en: {
@@ -75,6 +75,7 @@ const TRANSLATIONS = {
     scanToPay: "Scan QR Code to Pay Instantly",
     payViaApp: "Pay with UPI (GPay / PhonePe)",
     shareWhatsApp: "📲 Share Bill on WhatsApp",
+    downloadReceipt: "📥 Download Invoice Receipt (Print/PDF)",
     noItemFound: "No items found matching your search!",
     seeAll: "View All Items",
     ownerLoginTitle: "🔐 Store Owner Login",
@@ -88,9 +89,8 @@ const TRANSLATIONS = {
     exchangeBannerSub: "Exchange old Steel, Aluminum, Brass & Copper at daily market rates",
     calculateExchange: "Add Scrap Exchange",
     oldUtensilDeduction: "Old Utensil Scrap Discount",
-    perPiece: "Per Piece",
-    perKg: "Per KG",
-    weight: "Weight (KG)",
+    bargainDiscount: "Special Less / Bargain Discount",
+    addAnotherScrap: "+ Add Another Metal",
     serverError: "Unable to connect to billing server!"
   }
 };
@@ -102,7 +102,7 @@ const INITIAL_PRODUCTS = [
     nameEn: "Hawkins Classic Pressure Cooker (5L)",
     category: "कुकर",
     company: "Hawkins",
-    pricingType: "piece", // 'piece' or 'weight'
+    pricingType: "piece",
     price: 1850,
     mrp: 2150,
     badgeHi: "बेस्टसेलर",
@@ -201,10 +201,14 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
 
-  // Scrap Exchange State in Cart
+  // Multiple Scrap Exchange Items Array: [{ metal: 'steel', weight: 1.5 }]
   const [isExchangeActive, setIsExchangeActive] = useState(false);
-  const [selectedScrapMetal, setSelectedScrapMetal] = useState('aluminum');
-  const [scrapWeightKg, setScrapWeightKg] = useState('');
+  const [scrapItems, setScrapItems] = useState([
+    { metal: 'steel', weight: '' }
+  ]);
+
+  // Bargain Discount (Less ₹)
+  const [bargainLessAmount, setBargainLessAmount] = useState('');
 
   // Daily Scrap Exchange Rates
   const [scrapRates, setScrapRates] = useState(() => {
@@ -233,14 +237,13 @@ export default function App() {
     "कुकर", "कड़ाही", "तवा", "डिब्बे", "गिलास", "क्रॉकरी", "कटलरी", "गिफ्ट आईटम", "तोलाई बर्तन (Per KG)"
   ]);
 
-  // New Item State with Piece vs KG support
   const [newItem, setNewItem] = useState({
     nameHi: '',
     nameEn: '',
     category: 'कुकर',
     customCategory: '',
     company: '',
-    pricingType: 'piece', // 'piece' or 'weight'
+    pricingType: 'piece',
     price: '',
     mrp: '',
     pricePerKg: '',
@@ -312,7 +315,6 @@ export default function App() {
     }
   };
 
-  // Save UPI & Daily Scrap Metal Rates
   const handleSaveSettings = async (e) => {
     e.preventDefault();
     try {
@@ -385,16 +387,15 @@ export default function App() {
     return matchCat && matchSearch;
   });
 
-  // Cart operations (Handles both per-piece and per-KG items)
   const addToCart = (product, selectedWeight = null) => {
     const isWeightBased = product.pricingType === 'weight';
     const effectiveWeight = selectedWeight || product.defaultWeight || 1.0;
     const unitPrice = isWeightBased ? Math.round(product.pricePerKg * effectiveWeight) : product.price;
 
     setCart(prev => {
-      const exists = prev.find(p => p.id === product.id && p.selectedWeight === effectiveWeight);
+      const exists = prev.find(p => p.id === product.id && p.effectiveWeight === effectiveWeight);
       if (exists) {
-        return prev.map(p => (p.id === product.id && p.selectedWeight === effectiveWeight) ? { ...p, qty: p.qty + 1 } : p);
+        return prev.map(p => (p.id === product.id && p.effectiveWeight === effectiveWeight) ? { ...p, qty: p.qty + 1 } : p);
       }
       return [...prev, { ...product, effectiveWeight, price: unitPrice, qty: 1 }];
     });
@@ -410,32 +411,62 @@ export default function App() {
     }).filter(Boolean));
   };
 
-  // Exchange Scrap Value Calculation
-  const scrapRatePerKg = scrapRates[selectedScrapMetal]?.rate || 0;
-  const scrapDeduction = isExchangeActive && Number(scrapWeightKg) > 0 
-    ? Math.round(Number(scrapWeightKg) * scrapRatePerKg) 
+  // MULTIPLE SCRAP ITEMS HANDLING
+  const addScrapRow = () => {
+    setScrapItems(prev => [...prev, { metal: 'aluminum', weight: '' }]);
+  };
+
+  const updateScrapRow = (index, field, value) => {
+    setScrapItems(prev => prev.map((row, i) => i === index ? { ...row, [field]: value } : row));
+  };
+
+  const removeScrapRow = (index) => {
+    setScrapItems(prev => prev.filter((_, i) => i !== index));
+  };
+
+  // Total Scrap Deduction from All Metals Combined
+  const totalScrapDeduction = isExchangeActive
+    ? scrapItems.reduce((sum, item) => {
+        const w = Number(item.weight) || 0;
+        const r = scrapRates[item.metal]?.rate || 0;
+        return sum + Math.round(w * r);
+      }, 0)
     : 0;
 
+  const bargainLess = Math.max(0, Number(bargainLessAmount) || 0);
   const rawSubtotal = cart.reduce((sum, item) => sum + (item.price * item.qty), 0);
-  const totalAmount = Math.max(0, rawSubtotal - scrapDeduction);
+  const totalAmount = Math.max(0, rawSubtotal - totalScrapDeduction - bargainLess);
   const totalItemsCount = cart.reduce((sum, item) => sum + item.qty, 0);
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
     try {
+      const scrapBreakdown = isExchangeActive && totalScrapDeduction > 0
+        ? scrapItems.filter(s => Number(s.weight) > 0).map(s => `${scrapRates[s.metal]?.hi} (${s.weight} kg @ ₹${scrapRates[s.metal]?.rate}/kg)`).join(', ')
+        : null;
+
       const res = await fetch(`${apiBase}/api/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           items: cart, 
           totalAmount, 
-          scrapDeduction,
-          scrapDetails: isExchangeActive && scrapDeduction > 0 ? `${scrapRates[selectedScrapMetal]?.hi} (${scrapWeightKg} kg)` : null 
+          rawSubtotal,
+          totalScrapDeduction,
+          bargainLess,
+          scrapBreakdown
         })
       });
       const data = await res.json();
       if (data.success) {
-        setCheckoutData(data);
+        setCheckoutData({
+          ...data,
+          cartItems: [...cart],
+          rawSubtotal,
+          totalScrapDeduction,
+          bargainLess,
+          scrapBreakdown
+        });
       }
     } catch (err) {
       alert(t.serverError);
@@ -450,22 +481,30 @@ export default function App() {
       return `• ${displayName}${weightInfo} (x${i.qty}) - ₹${i.price * i.qty}`;
     }).join('%0A');
 
-    const exchangeTxt = scrapDeduction > 0 
-      ? `%0A----------------------------%0Aपुराने बर्तन एक्सचेंज (${scrapRates[selectedScrapMetal]?.hi} ${scrapWeightKg} kg): -₹${scrapDeduction}` 
+    const exchangeTxt = totalScrapDeduction > 0 
+      ? `%0A----------------------------%0Aपुराने बर्तन एक्सचेंज छूट: -₹${totalScrapDeduction}%0A(${checkoutData.scrapBreakdown || ''})` 
       : '';
 
-    const heading = lang === 'hi' ? "*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - पर्चा*" : "*Shri Ganesh Crockery & Gift House - Invoice*";
+    const lessTxt = bargainLess > 0 ? `%0Aदुकान विशेष लेस / छूट: -₹${bargainLess}` : '';
+
+    const heading = lang === 'hi' ? "*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - पक्का पर्चा*" : "*Shri Ganesh Crockery & Gift House - Invoice*";
     const msg = `${heading}%0A` +
       `ऑर्डर नंबर: ${checkoutData.orderId}%0A` +
       `----------------------------%0A` +
       `${itemsSummary}` +
-      `${exchangeTxt}%0A` +
+      `${exchangeTxt}` +
+      `${lessTxt}%0A` +
       `----------------------------%0A` +
       `*कुल भुगतान राशि: ₹${checkoutData.totalAmount}*%0A` +
       `दुकान: मेन मार्केट, रतिया | मो: 83074-65719%0A` +
       `धन्यवाद! फिर पधारें 🙏`;
 
     window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+  };
+
+  // Instant Print / PDF Download
+  const handlePrintReceipt = () => {
+    window.print();
   };
 
   const handleAddItem = (e) => {
@@ -713,7 +752,7 @@ export default function App() {
         ))}
       </div>
 
-      {/* 5. PRODUCTS GRID WITH PER-PIECE & PER-KG BADGES */}
+      {/* 5. PRODUCTS GRID */}
       <main style={{ maxWidth: '850px', margin: '0 auto', padding: '0 16px' }}>
         {filteredProducts.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px 20px', color: '#666' }}>
@@ -785,7 +824,7 @@ export default function App() {
                           <span style={{ fontSize: '17px', fontWeight: '900', color: '#6B0808' }}>₹{item.pricePerKg}</span>
                           <span style={{ fontSize: '11px', fontWeight: 'bold', color: '#555' }}> / kg</span>
                           <div style={{ fontSize: '11px', color: '#888' }}>
-                            लगभग: ₹{Math.round(item.pricePerKg * (item.defaultWeight || 1.0))} ({item.defaultWeight || 1.0} kg)
+                            अनुमानित: ₹{Math.round(item.pricePerKg * (item.defaultWeight || 1.0))} ({item.defaultWeight || 1.0} kg)
                           </div>
                         </div>
                       ) : (
@@ -842,7 +881,11 @@ export default function App() {
             <div style={{ fontSize: '11px', opacity: 0.9 }}>{totalItemsCount} {t.itemsSelected}</div>
             <div style={{ fontSize: '18px', fontWeight: '900' }}>
               {t.totalAmount}: ₹{totalAmount} 
-              {scrapDeduction > 0 && <span style={{ fontSize: '11px', color: '#FDE047', marginLeft: '6px' }}>(-₹{scrapDeduction})</span>}
+              {(totalScrapDeduction > 0 || bargainLess > 0) && (
+                <span style={{ fontSize: '11px', color: '#FDE047', marginLeft: '6px' }}>
+                  (-₹{totalScrapDeduction + bargainLess})
+                </span>
+              )}
             </div>
           </div>
           <button 
@@ -863,10 +906,10 @@ export default function App() {
         </div>
       )}
 
-      {/* 7. CART, EXCHANGE CALCULATOR & PAYMENT MODAL */}
+      {/* 7. CART & PAYMENT MODAL */}
       {isCartOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '500px', maxHeight: '88vh', borderRadius: '20px 20px 0 0', padding: '20px', overflowY: 'auto' }}>
+          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '520px', maxHeight: '90vh', borderRadius: '20px 20px 0 0', padding: '20px', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
               <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>{t.billSummary}</h2>
               <button 
@@ -900,12 +943,21 @@ export default function App() {
                   {t.payViaApp}
                 </a>
 
-                <button 
-                  onClick={shareOnWhatsApp}
-                  style={{ width: '100%', background: '#25D366', color: '#FFF', padding: '12px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer' }}
-                >
-                  {t.shareWhatsApp}
-                </button>
+                {/* WhatsApp & Print Receipt Buttons */}
+                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
+                  <button 
+                    onClick={shareOnWhatsApp}
+                    style={{ flex: 1, background: '#25D366', color: '#FFF', padding: '12px 8px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}
+                  >
+                    {t.shareWhatsApp}
+                  </button>
+                  <button 
+                    onClick={handlePrintReceipt}
+                    style={{ flex: 1, background: '#1E3A8A', color: '#FFF', padding: '12px 8px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}
+                  >
+                    {t.downloadReceipt}
+                  </button>
+                </div>
               </div>
             ) : (
               <div>
@@ -931,7 +983,7 @@ export default function App() {
                   );
                 })}
 
-                {/* --- OLD UTENSILS EXCHANGE ACCORDION --- */}
+                {/* --- 1. MULTIPLE OLD UTENSILS EXCHANGE ACCORDION --- */}
                 <div style={{ margin: '14px 0', padding: '12px', background: '#FFF8E7', borderRadius: '12px', border: '1.5px dashed #D4AF37' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ fontSize: '13px', fontWeight: '900', color: '#6B0808', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
@@ -943,53 +995,106 @@ export default function App() {
                       />
                       🔄 {lang === 'hi' ? 'पुराने बर्तन एक्सचेंज (छूट पाएँ)' : 'Exchange Old Utensils'}
                     </label>
-                    {isExchangeActive && (
-                      <span style={{ fontSize: '12px', fontWeight: '900', color: '#1B5E20' }}>
-                        -₹{scrapDeduction}
+                    {isExchangeActive && totalScrapDeduction > 0 && (
+                      <span style={{ fontSize: '13px', fontWeight: '900', color: '#1B5E20' }}>
+                        -₹{totalScrapDeduction}
                       </span>
                     )}
                   </div>
 
                   {isExchangeActive && (
                     <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #E6D4B0' }}>
-                      <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                        <select 
-                          value={selectedScrapMetal} 
-                          onChange={e => setSelectedScrapMetal(e.target.value)}
-                          style={{ width: '60%', padding: '8px', borderRadius: '6px', border: '1.5px solid #6B0808', fontWeight: 'bold', fontSize: '12px', background: '#FFF' }}
-                        >
-                          {Object.entries(scrapRates).map(([key, val]) => (
-                            <option key={key} value={key}>
-                              {lang === 'hi' ? val.hi : val.en} (₹{val.rate}/kg)
-                            </option>
-                          ))}
-                        </select>
-                        <input 
-                          type="number" 
-                          placeholder="वज़न (KG) उदा: 2.5" 
-                          step="0.1"
-                          value={scrapWeightKg} 
-                          onChange={e => setScrapWeightKg(e.target.value)}
-                          style={{ width: '40%', padding: '8px', borderRadius: '6px', border: '1.5px solid #333', fontWeight: 'bold', fontSize: '12px', boxSizing: 'border-box' }}
-                        />
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#666' }}>
-                        * आज का लाइव भाव: <strong>₹{scrapRatePerKg}/kg</strong> | पुराने बर्तनों की कुल छूट: <strong style={{ color: '#1B5E20' }}>₹{scrapDeduction}</strong>
-                      </div>
+                      {scrapItems.map((item, index) => {
+                        const r = scrapRates[item.metal]?.rate || 0;
+                        const w = Number(item.weight) || 0;
+                        const rowDiscount = Math.round(w * r);
+
+                        return (
+                          <div key={index} style={{ marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px dashed #E6D4B0' }}>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <select 
+                                value={item.metal} 
+                                onChange={e => updateScrapRow(index, 'metal', e.target.value)}
+                                style={{ width: '55%', padding: '8px 4px', borderRadius: '6px', border: '1.5px solid #6B0808', fontWeight: 'bold', fontSize: '12px', background: '#FFF' }}
+                              >
+                                {Object.entries(scrapRates).map(([key, val]) => (
+                                  <option key={key} value={key}>
+                                    {lang === 'hi' ? val.hi : val.en} (₹{val.rate}/kg)
+                                  </option>
+                                ))}
+                              </select>
+                              <input 
+                                type="number" 
+                                placeholder="वज़न (KG)" 
+                                step="0.05"
+                                value={item.weight} 
+                                onChange={e => updateScrapRow(index, 'weight', e.target.value)}
+                                style={{ width: '30%', padding: '8px 6px', borderRadius: '6px', border: '1.5px solid #333', fontWeight: 'bold', fontSize: '12px', boxSizing: 'border-box' }}
+                              />
+                              {scrapItems.length > 1 && (
+                                <button 
+                                  onClick={() => removeScrapRow(index)}
+                                  style={{ width: '15%', background: '#B91C1C', color: '#FFF', border: 'none', borderRadius: '6px', padding: '8px 0', cursor: 'pointer', fontWeight: 'bold', fontSize: '12px' }}
+                                >
+                                  ✕
+                                </button>
+                              )}
+                            </div>
+                            {w > 0 && (
+                              <div style={{ fontSize: '11px', color: '#1B5E20', fontWeight: 'bold', marginTop: '2px', textAlign: 'right' }}>
+                                = {w} kg @ ₹{r}/kg = -₹{rowDiscount}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                      <button 
+                        onClick={addScrapRow}
+                        style={{ background: '#6B0808', color: '#FFF', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer', marginTop: '4px' }}
+                      >
+                        {t.addAnotherScrap}
+                      </button>
                     </div>
                   )}
                 </div>
 
-                {/* BILL TOTALS */}
+                {/* --- 2. BARGAIN DISCOUNT (LESS ₹) --- */}
+                <div style={{ margin: '12px 0', padding: '10px 12px', background: '#F0FDF4', borderRadius: '10px', border: '1.5px solid #86EFAC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div>
+                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#166534', display: 'block' }}>
+                      💸 {t.bargainDiscount}
+                    </label>
+                    <span style={{ fontSize: '10px', color: '#15803D' }}>ग्राहक की मान-मनुहार / राउंड ऑफ़ लेस</span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#166534' }}>-₹</span>
+                    <input 
+                      type="number" 
+                      placeholder="0"
+                      value={bargainLessAmount} 
+                      onChange={e => setBargainLessAmount(e.target.value)}
+                      style={{ width: '85px', padding: '6px 8px', borderRadius: '6px', border: '1.5px solid #166534', fontWeight: '900', fontSize: '14px', textAlign: 'right', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+
+                {/* BILL TOTALS SUMMARY */}
                 <div style={{ background: '#F8F4EC', padding: '12px', borderRadius: '10px', margin: '14px 0' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#555', marginBottom: '4px' }}>
                     <span>नया सामान कुल:</span>
                     <span>₹{rawSubtotal}</span>
                   </div>
-                  {scrapDeduction > 0 && (
+                  {totalScrapDeduction > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#1B5E20', fontWeight: 'bold', marginBottom: '4px' }}>
                       <span>{t.oldUtensilDeduction}:</span>
-                      <span>-₹{scrapDeduction}</span>
+                      <span>-₹{totalScrapDeduction}</span>
+                    </div>
+                  )}
+                  {bargainLess > 0 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#15803D', fontWeight: 'bold', marginBottom: '4px' }}>
+                      <span>दुकान विशेष लेस:</span>
+                      <span>-₹{bargainLess}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', color: '#6B0808', borderTop: '1px solid #DDD', paddingTop: '6px' }}>
@@ -1137,7 +1242,7 @@ export default function App() {
                   </button>
                 </div>
 
-                {/* TAB 1: ADD NEW ITEM (WITH PER PIECE & PER KG OPTIONS) */}
+                {/* TAB 1: ADD NEW ITEM */}
                 {adminTab === 'ADD' && (
                   <form onSubmit={handleAddItem}>
                     <label style={{ fontSize: '13px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>सामान का नाम *</label>
@@ -1225,7 +1330,7 @@ export default function App() {
                   </form>
                 )}
 
-                {/* TAB 2: MANAGE / DELETE */}
+                {/* TAB 2: MANAGE */}
                 {adminTab === 'MANAGE' && (
                   <div style={{ maxHeight: '420px', overflowY: 'auto' }}>
                     {products.map(item => (
@@ -1251,7 +1356,6 @@ export default function App() {
                 {/* TAB 3: DAILY SCRAP METAL RATES & UPI SETTINGS */}
                 {adminTab === 'SETTINGS' && (
                   <div>
-                    {/* SECTION: DAILY SCRAP RATES (LIVE METAL PRICING) */}
                     <form onSubmit={handleSaveSettings} style={{ marginBottom: '20px', borderBottom: '2px dashed #DDD', paddingBottom: '16px' }}>
                       <h3 style={{ margin: '0 0 4px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
                         ⚖️ आज के पुराने बर्तन स्क्रैप भाव (₹ / KG)
@@ -1279,7 +1383,6 @@ export default function App() {
                         ))}
                       </div>
 
-                      {/* UPI SETTINGS */}
                       <h3 style={{ margin: '14px 0 6px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
                         💳 UPI ID सेटिंग
                       </h3>
@@ -1297,7 +1400,6 @@ export default function App() {
                       </button>
                     </form>
 
-                    {/* SECTION: PIN CHANGE */}
                     <form onSubmit={handleUpdatePin}>
                       <h3 style={{ margin: '0 0 4px 0', fontSize: '14px', color: '#6B0808', fontWeight: '900' }}>
                         🔑 ओनर पिन बदलें
