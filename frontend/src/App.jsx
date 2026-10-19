@@ -20,6 +20,83 @@ const DEFAULT_SCRAP_RATES = {
   "copper": { hi: "तांबा (Copper)", en: "Copper", rate: 680 }
 };
 
+const TRANSLATIONS = {
+  hi: {
+    tagline: "करण्डी वालों की बर्तनों की दुकान",
+    shopName: "श्री गणेश क्रॉकरी एंड गिफ्ट हाउस",
+    gstin: "जीएसटीIN",
+    location: "मेन मार्केट, रतिया | मो: 83074-65719, 70159-64832",
+    call: "📞 कॉल करें",
+    ownerPanel: "🔐 मालिक पैनल",
+    searchPlaceholder: "🔍 कुकर, कड़ाही, ब्रांड, डिब्बे सर्च करें...",
+    allProducts: "सभी सामान",
+    addToOrder: "+ ऑर्डर में जोड़ें",
+    itemsSelected: "सामान चुने गए",
+    totalAmount: "कुल राशि",
+    viewBill: "बिल व QR देखें ➔",
+    billSummary: "दुकान का पर्चा (Bill Summary)",
+    orderNo: "ऑर्डर नंबर",
+    scanToPay: "QR स्कैन करके तुरंत भुगतान करें",
+    payViaApp: "GPay / PhonePe से डायरेक्ट पे करें",
+    shareWhatsApp: "📲 WhatsApp पर बिल भेजें",
+    downloadReceipt: "📥 पक्का बिल डाउनलोड करें (Print/PDF)",
+    noItemFound: "इस कैटेगरी या सर्च में कोई सामान नहीं मिला!",
+    seeAll: "सभी सामान देखें",
+    ownerLoginTitle: "🔐 दुकान मालिक लॉगिन",
+    ownerPinDesc: "पिन डालें",
+    loginBtn: "लॉगिन करें",
+    addNewTab: "+ नया सामान",
+    manageTab: "✏️ स्टॉक",
+    profileTab: "👤 प्रोफाइल",
+    settingsTab: "⚙️ स्क्रैप भाव",
+    standeeTab: "🖨️ स्टैंडी",
+    exchangeBannerTitle: "🔄 पुराने बर्तन लाओ - नया सामान ले जाओ!",
+    exchangeBannerSub: "स्टील, एल्युमिनियम, पीतल, तांबे के पुराने बर्तन बाज़ार भाव पर बदलें",
+    calculateExchange: "पुराना भाव जोड़ें",
+    oldUtensilDeduction: "पुराने बर्तनों की कुल छूट",
+    bargainDiscount: "विशेष छूट / लेस (Less)",
+    addAnotherScrap: "+ दूसरी धातु जोड़ें",
+    serverError: "बिलिंग सर्वर से कनेक्ट नहीं हो सका!"
+  },
+  en: {
+    tagline: "Karandi's Premium Kitchenware Store",
+    shopName: "Shri Ganesh Crockery & Gift House",
+    gstin: "GSTIN",
+    location: "Main Market, Ratia | M: 83074-65719, 70159-64832",
+    call: "📞 Call Now",
+    ownerPanel: "🔐 Owner Panel",
+    searchPlaceholder: "🔍 Search cookers, pans, containers, dinnerware...",
+    allProducts: "All Items",
+    addToOrder: "+ Add to Order",
+    itemsSelected: "items selected",
+    totalAmount: "Total Amount",
+    viewBill: "View Bill & QR ➔",
+    billSummary: "Store Bill & Invoice",
+    orderNo: "Order ID",
+    scanToPay: "Scan QR Code to Pay Instantly",
+    payViaApp: "Pay with UPI (GPay / PhonePe)",
+    shareWhatsApp: "📲 Share Bill on WhatsApp",
+    downloadReceipt: "📥 Download Invoice Receipt (Print/PDF)",
+    noItemFound: "No items found matching your search!",
+    seeAll: "View All Items",
+    ownerLoginTitle: "🔐 Store Owner Login",
+    ownerPinDesc: "Enter secret PIN",
+    loginBtn: "Login to Dashboard",
+    addNewTab: "+ New Item",
+    manageTab: "✏️ Stock",
+    profileTab: "👤 Profile",
+    settingsTab: "⚙️ Scrap Rates",
+    standeeTab: "🖨️ Standee",
+    exchangeBannerTitle: "🔄 Old Utensils Exchange Offer!",
+    exchangeBannerSub: "Exchange old Steel, Aluminum, Brass & Copper at daily market rates",
+    calculateExchange: "Add Scrap Exchange",
+    oldUtensilDeduction: "Old Utensil Scrap Discount",
+    bargainDiscount: "Special Less / Bargain Discount",
+    addAnotherScrap: "+ Add Another Metal",
+    serverError: "Unable to connect to billing server!"
+  }
+};
+
 const INITIAL_PRODUCTS = [
   {
     id: 1,
@@ -117,8 +194,9 @@ const INITIAL_PRODUCTS = [
 
 export default function App() {
   const [lang, setLang] = useState('hi');
+  const t = TRANSLATIONS[lang] || TRANSLATIONS['hi'];
   
-  // 1. VIRTUAL MARKET STORE ENTRANCE SCREEN
+  // 1. Virtual Market Entrance Screen
   const [showMarketEntrance, setShowMarketEntrance] = useState(true);
 
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
@@ -157,14 +235,13 @@ export default function App() {
   const [adminPin, setAdminPin] = useState('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   
-  // Forgot Password / OTP Flow States
+  // OTP Reset States
   const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
-  const [otpStep, setOtpStep] = useState(1); // 1: Send OTP, 2: Verify & Reset
+  const [otpStep, setOtpStep] = useState(1);
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [enteredOtp, setEnteredOtp] = useState('');
   const [newResetPin, setNewResetPin] = useState('');
 
-  // Admin Active Tab: 'ADD', 'MANAGE', 'SETTINGS', 'STANDEE', or 'PROFILE'
   const [adminTab, setAdminTab] = useState('ADD');
   const [editingProduct, setEditingProduct] = useState(null);
 
@@ -255,7 +332,6 @@ export default function App() {
     }
   };
 
-  // Save Settings & Admin Profile
   const handleSaveProfile = async (e) => {
     e.preventDefault();
     localStorage.setItem('sgc_admin_profile', JSON.stringify(adminProfile));
@@ -271,7 +347,6 @@ export default function App() {
     }
   };
 
-  // OTP SIMULATION FLOW
   const handleSendOtp = () => {
     const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
     setGeneratedOtp(randomOtp);
@@ -394,9 +469,7 @@ export default function App() {
   return (
     <div style={{ backgroundColor: '#F4EFEB', minHeight: '100vh', paddingBottom: '90px', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#111' }}>
       
-      {/* ========================================================
-          A. VIRTUAL MARKET STORE ENTRANCE EXPERIENCE (NEW!)
-      ======================================================== */}
+      {/* 1. VIRTUAL MARKET ENTRANCE SCREEN */}
       {showMarketEntrance && (
         <div style={{
           position: 'fixed',
@@ -412,17 +485,13 @@ export default function App() {
           boxSizing: 'border-box',
           overflowY: 'auto'
         }}>
-          {/* Top Night Market Strip */}
           <div style={{ textAlign: 'center' }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(212,175,55,0.15)', border: '1px solid #D4AF37', padding: '4px 16px', borderRadius: '20px', color: '#FDE047', fontSize: '12px', fontWeight: 'bold' }}>
-              🏮 रतिया मेन मार्केट (Ratia Main Market) • लाइव डिजिटल बाज़ार
+              🏮 रतिया मेन मार्केट (Ratia Main Market) • डिजिटल बाज़ार
             </div>
           </div>
 
-          {/* Market Street Silhouettes & Visual Shop Front */}
           <div style={{ maxWidth: '420px', width: '100%', textAlign: 'center', margin: '20px auto' }}>
-            
-            {/* Surrounding shops aesthetic mockup */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', opacity: 0.45, marginBottom: '-15px', padding: '0 10px' }}>
               <div style={{ background: '#2A1810', border: '1px solid #5C3A21', padding: '10px 8px', borderRadius: '6px 6px 0 0', width: '85px' }}>
                 <div style={{ fontSize: '9px', color: '#DDD' }}>कपड़ा मार्किट</div>
@@ -435,7 +504,6 @@ export default function App() {
               </div>
             </div>
 
-            {/* GRAND CENTRAL SHOP: SHREE GANESH CROCKERY */}
             <div style={{
               background: 'linear-gradient(180deg, #7A0C0C 0%, #9B1111 60%, #4D0606 100%)',
               border: '4px solid #D4AF37',
@@ -444,13 +512,11 @@ export default function App() {
               boxShadow: '0 0 35px rgba(212, 175, 55, 0.4), inset 0 0 20px rgba(0,0,0,0.5)',
               position: 'relative'
             }}>
-              {/* Shubh Labh Top Crest */}
               <div style={{ display: 'flex', justifyContent: 'center', gap: '10px', marginBottom: '8px' }}>
                 <span style={{ background: '#D4AF37', color: '#4A0505', fontSize: '11px', fontWeight: '900', padding: '2px 10px', borderRadius: '6px' }}>शुभ</span>
                 <span style={{ background: '#D4AF37', color: '#4A0505', fontSize: '11px', fontWeight: '900', padding: '2px 10px', borderRadius: '6px' }}>लाभ</span>
               </div>
 
-              {/* Glowing Shop Logo */}
               <div style={{ margin: '0 auto 12px auto', width: '90px', height: '90px' }}>
                 <img 
                   src="/logo.png" 
@@ -460,7 +526,6 @@ export default function App() {
                 />
               </div>
 
-              {/* 3D Signboard */}
               <div style={{ display: 'inline-block', background: '#1E3A8A', color: '#FDE047', border: '1.5px solid #FDE047', padding: '3px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', marginBottom: '6px' }}>
                 🚩 करण्डी वालों की बर्तनों की दुकान
               </div>
@@ -477,7 +542,6 @@ export default function App() {
                 ✨ कुकर, कड़ाही, डिनर सेट, शादी-शगुन गिफ्ट्स व पुराने बर्तन एक्सचेंज का पूरा बाज़ार अब आपके फ़ोन पर!
               </p>
 
-              {/* GRAND ENTER STORE BUTTON */}
               <button 
                 onClick={() => setShowMarketEntrance(false)}
                 style={{
@@ -499,18 +563,13 @@ export default function App() {
             </div>
           </div>
 
-          {/* Quick Direct Pass */}
           <div style={{ textAlign: 'center', opacity: 0.7, fontSize: '12px' }}>
-            स्वाइप या टैप करें • सीधा दुकान देखें
+            टैप करें • सीधा दुकान देखें
           </div>
         </div>
       )}
 
-      {/* ========================================================
-          B. MAIN APP STOREFRONT (FULL CATALOG & ACTIONS)
-      ======================================================== */}
-      
-      {/* 1. ROYAL BANNER HEADER */}
+      {/* 2. MAIN HEADER */}
       <header style={{ 
         background: 'radial-gradient(circle at 50% 20%, #9E1010 0%, #5E0505 85%, #420202 100%)', 
         color: '#FFF', 
@@ -525,7 +584,7 @@ export default function App() {
               {lang === 'hi' ? 'शुभ' : 'SHUBH'}
             </span>
             <span style={{ color: '#FDE047', fontSize: '12px', fontWeight: '900' }}>
-              GSTIN: {adminProfile.gstin}
+              {t.gstin}: {adminProfile.gstin}
             </span>
             <span style={{ background: '#D4AF37', color: '#420202', fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px' }}>
               {lang === 'hi' ? 'लाभ' : 'LABH'}
@@ -534,7 +593,7 @@ export default function App() {
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
             <button 
-              onClick={toggleLanguage}
+              onClick={() => setLang(prev => (prev === 'hi' ? 'en' : 'hi'))}
               style={{ background: '#D4AF37', border: '2px solid #FFFFFF', color: '#420202', padding: '4px 10px', borderRadius: '14px', fontSize: '11px', cursor: 'pointer', fontWeight: '900' }}
             >
               🌐 {lang === 'hi' ? 'English' : 'हिंदी'}
@@ -544,13 +603,13 @@ export default function App() {
               onClick={() => setIsAdminOpen(true)}
               style={{ background: '#000000', border: '1.5px solid #D4AF37', color: '#FDE047', padding: '5px 10px', borderRadius: '12px', fontSize: '11px', cursor: 'pointer', fontWeight: '900' }}
             >
-              🔐 {lang === 'hi' ? 'मालिक पैनल' : 'Owner Panel'}
+              {t.ownerPanel}
             </button>
             <a 
               href={`tel:${adminProfile.primaryPhone.replace(/[^0-9]/g, '')}`}
               style={{ background: '#D4AF37', color: '#420202', padding: '5px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '900', textDecoration: 'none' }}
             >
-              📞 Call
+              {t.call}
             </a>
           </div>
         </div>
@@ -561,43 +620,17 @@ export default function App() {
               src="/logo.png" 
               onError={(e) => { e.target.src = '/logo.jpeg'; }} 
               alt="Shri Ganesh Crockery" 
-              style={{ 
-                width: '74px', 
-                height: '74px', 
-                borderRadius: '50%', 
-                objectFit: 'cover', 
-                border: '3px solid #D4AF37', 
-                boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)',
-                backgroundColor: '#FFFFFF',
-                display: 'block'
-              }} 
+              style={{ width: '74px', height: '74px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #D4AF37', boxShadow: '0 0 15px rgba(212, 175, 55, 0.7)', backgroundColor: '#FFFFFF', display: 'block' }} 
             />
           </div>
 
           <div style={{ flex: 1 }}>
-            <div style={{ 
-              display: 'inline-block',
-              background: 'linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)',
-              color: '#FDE047',
-              border: '1.5px solid #FDE047',
-              padding: '2px 10px',
-              borderRadius: '20px',
-              fontSize: '12px',
-              fontWeight: '900',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
-            }}>
-              🚩 {lang === 'hi' ? 'करण्डी वालों की बर्तनों की दुकान' : "Karandi's Premium Kitchenware Store"}
+            <div style={{ display: 'inline-block', background: 'linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)', color: '#FDE047', border: '1.5px solid #FDE047', padding: '2px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
+              🚩 {t.tagline}
             </div>
 
-            <h1 style={{ 
-              margin: '5px 0 2px 0', 
-              fontSize: '22px', 
-              fontWeight: '900', 
-              color: '#FFFFFF', 
-              textShadow: '2px 2px 0px #000, 0 0 12px rgba(253, 224, 71, 0.4)',
-              lineHeight: '1.2'
-            }}>
-              श्री गणेश क्रॉकरी एंड गिफ्ट हाउस
+            <h1 style={{ margin: '5px 0 2px 0', fontSize: '22px', fontWeight: '900', color: '#FFFFFF', textShadow: '2px 2px 0px #000, 0 0 12px rgba(253, 224, 71, 0.4)', lineHeight: '1.2' }}>
+              {t.shopName}
             </h1>
 
             <div style={{ fontSize: '11px', color: '#FEF08A', fontWeight: '800', marginTop: '3px' }}>
@@ -607,96 +640,57 @@ export default function App() {
         </div>
       </header>
 
-      {/* 2. OLD UTENSILS EXCHANGE HIGHLIGHT STRIP */}
+      {/* 3. OLD UTENSILS STRIP */}
       <div style={{ maxWidth: '850px', margin: '10px auto 0 auto', padding: '0 16px' }}>
-        <div style={{ 
-          background: 'linear-gradient(90deg, #FFE8B6 0%, #FFF3D6 100%)', 
-          border: '2px solid #D4AF37', 
-          borderRadius: '12px', 
-          padding: '10px 14px', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-        }}>
+        <div style={{ background: 'linear-gradient(90deg, #FFE8B6 0%, #FFF3D6 100%)', border: '2px solid #D4AF37', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <div>
             <div style={{ fontSize: '13px', fontWeight: '900', color: '#6B0808' }}>
-              🔄 पुराने बर्तन लाओ - नया सामान ले जाओ!
+              {t.exchangeBannerTitle}
             </div>
             <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>
-              स्टील, एल्युमिनियम, पीतल, तांबे के पुराने बर्तन बाज़ार भाव पर बदलें
+              {t.exchangeBannerSub}
             </div>
           </div>
           <button 
             onClick={() => setIsCartOpen(true)}
-            style={{ 
-              background: '#6B0808', 
-              color: '#FFF', 
-              border: 'none', 
-              padding: '6px 12px', 
-              borderRadius: '14px', 
-              fontSize: '11px', 
-              fontWeight: '900', 
-              cursor: 'pointer',
-              whiteSpace: 'nowrap'
-            }}
+            style={{ background: '#6B0808', color: '#FFF', border: 'none', padding: '6px 12px', borderRadius: '14px', fontSize: '11px', fontWeight: '900', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
-            ⚖️ पुराना भाव जोड़ें
+            ⚖️ {t.calculateExchange}
           </button>
         </div>
       </div>
 
-      {/* 3. SEARCH BAR */}
+      {/* 4. SEARCH BAR */}
       <div style={{ maxWidth: '850px', margin: '0 auto', padding: '12px 16px 0 16px' }}>
         <input 
           type="text" 
-          placeholder="🔍 कुकर, कड़ाही, ब्रांड, डिब्बे सर्च करें..." 
+          placeholder={t.searchPlaceholder} 
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           style={{ width: '100%', padding: '13px 16px', borderRadius: '12px', border: '2px solid #8F0F0F', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '15px', fontWeight: '600', boxSizing: 'border-box' }}
         />
       </div>
 
-      {/* 4. DYNAMIC CATEGORIES */}
+      {/* 5. CATEGORIES TABS */}
       <div style={{ maxWidth: '850px', margin: '0 auto', padding: '12px 16px', display: 'flex', gap: '8px', overflowX: 'auto', scrollbarWidth: 'none' }}>
         <button 
           onClick={() => setSelectedCat('All')}
-          style={{
-            padding: '9px 18px',
-            borderRadius: '20px',
-            border: '2px solid #6B0808',
-            fontSize: '13px',
-            fontWeight: '800',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            backgroundColor: selectedCat === 'All' ? '#6B0808' : '#FFFFFF',
-            color: selectedCat === 'All' ? '#FFFFFF' : '#6B0808'
-          }}
+          style={{ padding: '9px 18px', borderRadius: '20px', border: '2px solid #6B0808', fontSize: '13px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap', backgroundColor: selectedCat === 'All' ? '#6B0808' : '#FFFFFF', color: selectedCat === 'All' ? '#FFFFFF' : '#6B0808' }}
         >
-          {lang === 'hi' ? 'सभी सामान' : 'All Items'} ({products.length})
+          {t.allProducts} ({products.length})
         </button>
         {categoriesList.map(cat => (
           <button 
             key={cat}
             onClick={() => setSelectedCat(cat)}
-            style={{
-              padding: '9px 18px',
-              borderRadius: '20px',
-              border: selectedCat === cat ? '2px solid #6B0808' : '2px solid #B09B88',
-              fontSize: '13px',
-              fontWeight: '800',
-              cursor: 'pointer',
-              whiteSpace: 'nowrap',
-              backgroundColor: selectedCat === cat ? '#6B0808' : '#FFFFFF',
-              color: selectedCat === cat ? '#FFFFFF' : '#222222'
-            }}
+            style={{ padding: '9px 18px', borderRadius: '20px', border: selectedCat === cat ? '2px solid #6B0808' : '2px solid #B09B88', fontSize: '13px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap', backgroundColor: selectedCat === cat ? '#6B0808' : '#FFFFFF', color: selectedCat === cat ? '#FFFFFF' : '#222222' }}
           >
             {getCatLabel(cat)}
           </button>
         ))}
       </div>
 
-      {/* 5. PRODUCTS GRID */}
+      {/* 6. PRODUCT CARDS GRID */}
       <main style={{ maxWidth: '850px', margin: '0 auto', padding: '0 16px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(170px, 1fr))', gap: '14px' }}>
           {filteredProducts.map(item => {
@@ -708,17 +702,7 @@ export default function App() {
             return (
               <div 
                 key={item.id}
-                style={{ 
-                  background: '#FFFFFF', 
-                  borderRadius: '14px', 
-                  overflow: 'hidden', 
-                  boxShadow: '0 3px 12px rgba(0,0,0,0.08)', 
-                  border: '2px solid #E6D8C8',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  position: 'relative'
-                }}
+                style={{ background: '#FFFFFF', borderRadius: '14px', overflow: 'hidden', boxShadow: '0 3px 12px rgba(0,0,0,0.08)', border: '2px solid #E6D8C8', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', position: 'relative' }}
               >
                 <span style={{ position: 'absolute', top: '8px', left: '8px', background: isWeight ? '#1E3A8A' : '#6B0808', color: '#FFF', fontSize: '11px', fontWeight: '900', padding: '3px 9px', borderRadius: '6px', zIndex: 1 }}>
                   {displayBadge}
@@ -758,7 +742,7 @@ export default function App() {
                     onClick={() => addToCart(item)}
                     style={{ width: '100%', background: '#6B0808', color: '#FFFFFF', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}
                   >
-                    + ऑर्डर में जोड़ें
+                    {t.addToOrder}
                   </button>
                 </div>
               </div>
@@ -767,15 +751,15 @@ export default function App() {
         </div>
       </main>
 
-      {/* 6. FLOATING BOTTOM CART BAR */}
+      {/* 7. FLOATING CART BAR */}
       {cart.length > 0 && (
         <div style={{ 
           position: 'fixed', bottom: '16px', left: '16px', right: '16px', maxWidth: '500px', margin: '0 auto', background: '#6B0808', color: '#FFF', padding: '12px 18px', borderRadius: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 6px 20px rgba(107,8,8,0.5)', zIndex: 99
         }}>
           <div>
-            <div style={{ fontSize: '11px', opacity: 0.9 }}>{totalItemsCount} सामान चुने गए</div>
+            <div style={{ fontSize: '11px', opacity: 0.9 }}>{totalItemsCount} {t.itemsSelected}</div>
             <div style={{ fontSize: '18px', fontWeight: '900' }}>
-              कुल राशि: ₹{totalAmount} 
+              {t.totalAmount}: ₹{totalAmount} 
               {(totalScrapDeduction > 0 || bargainLess > 0) && (
                 <span style={{ fontSize: '11px', color: '#FDE047', marginLeft: '6px' }}>
                   (-₹{totalScrapDeduction + bargainLess})
@@ -787,17 +771,17 @@ export default function App() {
             onClick={() => setIsCartOpen(true)}
             style={{ background: '#D4AF37', color: '#4A0505', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}
           >
-            बिल व QR देखें ➔
+            {t.viewBill}
           </button>
         </div>
       )}
 
-      {/* 7. CART & PAYMENT MODAL */}
+      {/* 8. CART & BILLING MODAL */}
       {isCartOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
           <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '520px', maxHeight: '90vh', borderRadius: '20px 20px 0 0', padding: '20px', overflowY: 'auto' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>दुकान का पर्चा (Bill Summary)</h2>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>{t.billSummary}</h2>
               <button onClick={() => { setIsCartOpen(false); setCheckoutData(null); }} style={{ background: '#222222', color: '#FFFFFF', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '900', fontSize: '15px' }}>
                 ✕
               </button>
@@ -806,15 +790,15 @@ export default function App() {
             {checkoutData ? (
               <div style={{ textAlign: 'center', padding: '10px 0' }}>
                 <span style={{ background: '#1B5E20', color: '#FFFFFF', padding: '5px 14px', borderRadius: '16px', fontSize: '12px', fontWeight: '900' }}>
-                  ऑर्डर नंबर: {checkoutData.orderId}
+                  {t.orderNo}: {checkoutData.orderId}
                 </span>
-                <h3 style={{ margin: '14px 0 6px 0', fontSize: '18px', fontWeight: '900' }}>QR स्कैन करके तुरंत भुगतान करें</h3>
+                <h3 style={{ margin: '14px 0 6px 0', fontSize: '18px', fontWeight: '900' }}>{t.scanToPay}</h3>
                 
                 <div style={{ padding: '12px', background: '#FFFFFF', display: 'inline-block', borderRadius: '16px', border: '3px solid #6B0808' }}>
                   <img src={checkoutData.qrDataUrl} alt="UPI QR" style={{ width: '220px', height: '220px', display: 'block' }} />
                 </div>
                 <div style={{ margin: '12px 0', fontSize: '22px', fontWeight: '900', color: '#6B0808' }}>
-                  कुल राशि: ₹{checkoutData.totalAmount}
+                  {t.totalAmount}: ₹{checkoutData.totalAmount}
                 </div>
                 
                 <div style={{ background: '#F8F4EC', padding: '8px 12px', borderRadius: '8px', marginBottom: '12px', fontSize: '12px', color: '#444' }}>
@@ -823,15 +807,15 @@ export default function App() {
                 </div>
 
                 <a href={checkoutData.upiUrl} style={{ display: 'block', background: '#1B5E20', color: '#FFF', padding: '13px', borderRadius: '10px', textDecoration: 'none', fontWeight: '900', fontSize: '15px', marginBottom: '8px' }}>
-                  GPay / PhonePe से डायरेक्ट पे करें
+                  {t.payViaApp}
                 </a>
 
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
                   <button onClick={shareOnWhatsApp} style={{ flex: 1, background: '#25D366', color: '#FFF', padding: '12px 8px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}>
-                    📲 WhatsApp पर बिल भेजें
+                    {t.shareWhatsApp}
                   </button>
                   <button onClick={() => window.print()} style={{ flex: 1, background: '#1E3A8A', color: '#FFF', padding: '12px 8px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}>
-                    📥 पक्का बिल डाउनलोड करें (Print)
+                    {t.downloadReceipt}
                   </button>
                 </div>
               </div>
@@ -859,7 +843,7 @@ export default function App() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ fontSize: '13px', fontWeight: '900', color: '#6B0808', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                       <input type="checkbox" checked={isExchangeActive} onChange={e => setIsExchangeActive(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#6B0808' }} />
-                      🔄 पुराने बर्तन एक्सचेंज (छूट पाएँ)
+                      🔄 {lang === 'hi' ? 'पुराने बर्तन एक्सचेंज (छूट पाएँ)' : 'Exchange Old Utensils'}
                     </label>
                     {isExchangeActive && totalScrapDeduction > 0 && (
                       <span style={{ fontSize: '13px', fontWeight: '900', color: '#1B5E20' }}>-₹{totalScrapDeduction}</span>
@@ -889,7 +873,7 @@ export default function App() {
                         );
                       })}
                       <button onClick={addScrapRow} style={{ background: '#6B0808', color: '#FFF', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        + दूसरी धातु जोड़ें
+                        {t.addAnotherScrap}
                       </button>
                     </div>
                   )}
@@ -898,7 +882,7 @@ export default function App() {
                 {/* Bargain Less Discount */}
                 <div style={{ margin: '12px 0', padding: '10px 12px', background: '#F0FDF4', borderRadius: '10px', border: '1.5px solid #86EFAC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#166534', display: 'block' }}>💸 विशेष छूट / लेस (Less)</label>
+                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#166534', display: 'block' }}>💸 {t.bargainDiscount}</label>
                     <span style={{ fontSize: '10px', color: '#15803D' }}>ग्राहक की मान-मनुहार / राउंड ऑफ़ लेस</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -915,24 +899,24 @@ export default function App() {
                   </div>
                   {totalScrapDeduction > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#1B5E20', fontWeight: 'bold', marginBottom: '4px' }}>
-                      <span>पुराने बर्तनों की कुल छूट:</span>
+                      <span>{t.oldUtensilDeduction}:</span>
                       <span>-₹{totalScrapDeduction}</span>
                     </div>
                   )}
                   {bargainLess > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#15803D', fontWeight: 'bold', marginBottom: '4px' }}>
-                      <span>दुकान विशेष लेस:</span>
+                      <span>विशेष लेस:</span>
                       <span>-₹{bargainLess}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', color: '#6B0808', borderTop: '1px solid #DDD', paddingTop: '6px' }}>
-                    <span>कुल राशि:</span>
+                    <span>{t.totalAmount}:</span>
                     <span>₹{totalAmount}</span>
                   </div>
                 </div>
 
                 <button onClick={handleCheckout} style={{ width: '100%', background: '#6B0808', color: '#FFF', padding: '14px', borderRadius: '10px', fontWeight: '900', border: 'none', cursor: 'pointer', fontSize: '15px' }}>
-                  बिल व QR देखें ➔
+                  {t.viewBill}
                 </button>
               </div>
             )}
@@ -940,9 +924,7 @@ export default function App() {
         </div>
       )}
 
-      {/* ========================================================
-          C. UPGRADED OWNER PORTAL + PROFILE + OTP RESET (NEW!)
-      ======================================================== */}
+      {/* 9. OWNER PANEL WITH PROFILE & OTP RESET */}
       {isAdminOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 110, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
           <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', padding: '24px', position: 'relative', border: '3px solid #6B0808', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
@@ -951,12 +933,11 @@ export default function App() {
               ✕
             </button>
             
-            {/* 1. LOGIN WITH PIN OR OTP RESET */}
             {!isAdminLoggedIn ? (
               <div>
                 {!isForgotPinOpen ? (
                   <div>
-                    <h2 style={{ margin: '0 0 10px 0', fontSize: '19px', color: '#6B0808', fontWeight: '900' }}>🔐 दुकान मालिक लॉगिन</h2>
+                    <h2 style={{ margin: '0 0 10px 0', fontSize: '19px', color: '#6B0808', fontWeight: '900' }}>{t.ownerLoginTitle}</h2>
                     <p style={{ fontSize: '13px', color: '#444', margin: '0 0 16px 0' }}>मालिक: <strong>{adminProfile.adminName}</strong> ({adminProfile.primaryPhone})</p>
                     <input 
                       type="password" 
@@ -976,7 +957,7 @@ export default function App() {
                       }}
                       style={{ width: '100%', background: '#6B0808', color: '#FFFFFF', padding: '13px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '15px', cursor: 'pointer' }}
                     >
-                      लॉगिन करें ➔
+                      {t.loginBtn} ➔
                     </button>
 
                     <div style={{ textAlign: 'center', marginTop: '16px' }}>
@@ -989,11 +970,10 @@ export default function App() {
                     </div>
                   </div>
                 ) : (
-                  /* OTP RESET PIN PORTAL */
                   <div>
                     <h2 style={{ margin: '0 0 6px 0', fontSize: '18px', color: '#6B0808', fontWeight: '900' }}>🔑 OTP से पिन रीसेट करें</h2>
                     <p style={{ fontSize: '12px', color: '#666', margin: '0 0 14px 0' }}>
-                      मालिक के रजिस्टर्ड नंबर <strong>{adminProfile.primaryPhone}</strong> पर एक गुप्त OTP भेजा जाएगा।
+                      मालिक के रजिस्टर्ड नंबर <strong>{adminProfile.primaryPhone}</strong> पर कोड भेजा जाएगा।
                     </p>
 
                     {otpStep === 1 ? (
@@ -1085,27 +1065,26 @@ export default function App() {
 
             ) : (
 
-              /* LOGGED IN ADMIN TABS (5 FULL TABS) */
+              /* LOGGED IN ADMIN TABS */
               <div>
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', borderBottom: '2px solid #EEE', paddingBottom: '10px', overflowX: 'auto' }}>
                   <button onClick={() => setAdminTab('ADD')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'ADD' ? '#6B0808' : '#EEE', color: adminTab === 'ADD' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    + नया सामान
+                    {t.addNewTab}
                   </button>
                   <button onClick={() => setAdminTab('MANAGE')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'MANAGE' ? '#6B0808' : '#EEE', color: adminTab === 'MANAGE' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    ✏️ स्टॉक
+                    {t.manageTab}
                   </button>
                   <button onClick={() => setAdminTab('PROFILE')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'PROFILE' ? '#6B0808' : '#EEE', color: adminTab === 'PROFILE' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    👤 मालिक प्रोफाइल
+                    {t.profileTab}
                   </button>
                   <button onClick={() => setAdminTab('SETTINGS')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'SETTINGS' ? '#6B0808' : '#EEE', color: adminTab === 'SETTINGS' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    ⚙️ स्क्रैप भाव
+                    {t.settingsTab}
                   </button>
                   <button onClick={() => setAdminTab('STANDEE')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'STANDEE' ? '#6B0808' : '#EEE', color: adminTab === 'STANDEE' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    🖨️ स्टैंडी
+                    {t.standeeTab}
                   </button>
                 </div>
 
-                {/* TAB 1: ADD ITEM */}
                 {adminTab === 'ADD' && (
                   <form onSubmit={handleAddItem}>
                     <label style={{ fontSize: '12px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>सामान का नाम *</label>
@@ -1135,7 +1114,6 @@ export default function App() {
                   </form>
                 )}
 
-                {/* TAB 2: MANAGE */}
                 {adminTab === 'MANAGE' && (
                   <div style={{ maxHeight: '420px', overflowY: 'auto' }}>
                     {products.map(item => (
@@ -1156,14 +1134,13 @@ export default function App() {
                   </div>
                 )}
 
-                {/* TAB 3: ADMIN PROFILE TAB (NEW!) */}
                 {adminTab === 'PROFILE' && (
                   <form onSubmit={handleSaveProfile}>
                     <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
                       👤 दुकान व मालिक का विवरण (Store Profile)
                     </h3>
 
-                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>मालिक / प्रोपराइटर का नाम:</label>
+                    <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>मालिक का नाम:</label>
                     <input type="text" value={adminProfile.adminName} onChange={e => setAdminProfile({ ...adminProfile, adminName: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1.5px solid #333', fontWeight: 'bold', marginBottom: '10px', boxSizing: 'border-box' }} required />
 
                     <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
@@ -1189,7 +1166,6 @@ export default function App() {
                   </form>
                 )}
 
-                {/* TAB 4: SCRAP RATES & UPI */}
                 {adminTab === 'SETTINGS' && (
                   <form onSubmit={handleSaveSettings}>
                     <h3 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#6B0808', fontWeight: '900' }}>
@@ -1215,18 +1191,9 @@ export default function App() {
                   </form>
                 )}
 
-                {/* TAB 5: COUNTER QR STANDEE */}
                 {adminTab === 'STANDEE' && (
                   <div style={{ textAlign: 'center' }}>
-                    <div id="printable-standee" style={{ 
-                      background: 'radial-gradient(circle, #7A0C0C 0%, #4A0505 100%)', 
-                      color: '#FFF', 
-                      padding: '24px 16px', 
-                      borderRadius: '16px', 
-                      border: '4px solid #D4AF37', 
-                      boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
-                      margin: '10px 0 16px 0'
-                    }}>
+                    <div id="printable-standee" style={{ background: 'radial-gradient(circle, #7A0C0C 0%, #4A0505 100%)', color: '#FFF', padding: '24px 16px', borderRadius: '16px', border: '4px solid #D4AF37', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', margin: '10px 0 16px 0' }}>
                       <div style={{ background: '#D4AF37', color: '#4A0505', display: 'inline-block', padding: '3px 12px', borderRadius: '20px', fontWeight: '900', fontSize: '12px', marginBottom: '8px' }}>
                         🚩 करण्डी वालों की बर्तनों की दुकान
                       </div>
