@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 const CATEGORY_MAP = {
   "कुकर": "Cookers",
@@ -20,82 +20,11 @@ const DEFAULT_SCRAP_RATES = {
   "copper": { hi: "तांबा (Copper)", en: "Copper", rate: 680 }
 };
 
-const TRANSLATIONS = {
-  hi: {
-    tagline: "करण्डी वालों की बर्तनों की दुकान",
-    shopName: "श्री गणेश क्रॉकरी एंड गिफ्ट हाउस",
-    gstin: "जीएसटीIN",
-    location: "मेन मार्केट, रतिया | मो: 83074-65719, 70159-64832",
-    call: "📞 कॉल करें",
-    ownerPanel: "🔐 मालिक पैनल",
-    searchPlaceholder: "🔍 कुकर, कड़ाही, ब्रांड, डिब्बे सर्च करें...",
-    allProducts: "सभी सामान",
-    addToOrder: "+ ऑर्डर में जोड़ें",
-    itemsSelected: "सामान चुने गए",
-    totalAmount: "कुल राशि",
-    viewBill: "बिल व QR देखें ➔",
-    billSummary: "दुकान का पर्चा (Bill Summary)",
-    orderNo: "ऑर्डर नंबर",
-    scanToPay: "QR स्कैन करके तुरंत भुगतान करें",
-    payViaApp: "GPay / PhonePe से डायरेक्ट पे करें",
-    shareWhatsApp: "📲 WhatsApp पर बिल भेजें",
-    downloadReceipt: "📥 पक्का बिल डाउनलोड करें (Print/PDF)",
-    noItemFound: "इस कैटेगरी या सर्च में कोई सामान नहीं मिला!",
-    seeAll: "सभी सामान देखें",
-    ownerLoginTitle: "🔐 दुकान मालिक लॉगिन",
-    ownerPinDesc: "पिन डालें",
-    loginBtn: "लॉगिन करें",
-    addNewTab: "+ नया सामान",
-    manageTab: "✏️ स्टॉक",
-    profileTab: "👤 प्रोफाइल",
-    settingsTab: "⚙️ स्क्रैप भाव",
-    standeeTab: "🖨️ स्टैंडी",
-    exchangeBannerTitle: "🔄 पुराने बर्तन लाओ - नया सामान ले जाओ!",
-    exchangeBannerSub: "स्टील, एल्युमिनियम, पीतल, तांबे के पुराने बर्तन बाज़ार भाव पर बदलें",
-    calculateExchange: "पुराना भाव जोड़ें",
-    oldUtensilDeduction: "पुराने बर्तनों की कुल छूट",
-    bargainDiscount: "विशेष छूट / लेस (Less)",
-    addAnotherScrap: "+ दूसरी धातु जोड़ें",
-    serverError: "बिलिंग सर्वर से कनेक्ट नहीं हो सका!"
-  },
-  en: {
-    tagline: "Karandi's Premium Kitchenware Store",
-    shopName: "Shri Ganesh Crockery & Gift House",
-    gstin: "GSTIN",
-    location: "Main Market, Ratia | M: 83074-65719, 70159-64832",
-    call: "📞 Call Now",
-    ownerPanel: "🔐 Owner Panel",
-    searchPlaceholder: "🔍 Search cookers, pans, containers, dinnerware...",
-    allProducts: "All Items",
-    addToOrder: "+ Add to Order",
-    itemsSelected: "items selected",
-    totalAmount: "Total Amount",
-    viewBill: "View Bill & QR ➔",
-    billSummary: "Store Bill & Invoice",
-    orderNo: "Order ID",
-    scanToPay: "Scan QR Code to Pay Instantly",
-    payViaApp: "Pay with UPI (GPay / PhonePe)",
-    shareWhatsApp: "📲 Share Bill on WhatsApp",
-    downloadReceipt: "📥 Download Invoice Receipt (Print/PDF)",
-    noItemFound: "No items found matching your search!",
-    seeAll: "View All Items",
-    ownerLoginTitle: "🔐 Store Owner Login",
-    ownerPinDesc: "Enter secret PIN",
-    loginBtn: "Login to Dashboard",
-    addNewTab: "+ New Item",
-    manageTab: "✏️ Stock",
-    profileTab: "👤 Profile",
-    settingsTab: "⚙️ Scrap Rates",
-    standeeTab: "🖨️ Standee",
-    exchangeBannerTitle: "🔄 Old Utensils Exchange Offer!",
-    exchangeBannerSub: "Exchange old Steel, Aluminum, Brass & Copper at daily market rates",
-    calculateExchange: "Add Scrap Exchange",
-    oldUtensilDeduction: "Old Utensil Scrap Discount",
-    bargainDiscount: "Special Less / Bargain Discount",
-    addAnotherScrap: "+ Add Another Metal",
-    serverError: "Unable to connect to billing server!"
-  }
-};
+const SHOP_WHATSAPP_NUMBERS = [
+  { label: "Counter 1 (मुख्य काउंटर)", number: "9996146883" },
+  { label: "Counter 2 (बिलिंग काउंटर)", number: "9357404458" },
+  { label: "Counter 3 (सपोर्ट व ऑर्डर)", number: "9817691784" }
+];
 
 const INITIAL_PRODUCTS = [
   {
@@ -110,8 +39,7 @@ const INITIAL_PRODUCTS = [
     badgeHi: "बेस्टसेलर",
     badgeEn: "Bestseller",
     image: "https://images.unsplash.com/photo-1584990347449-399a9cf3e218?w=500&auto=format&fit=crop&q=80",
-    descHi: "वर्जिन एल्युमिनियम बेस, मजबूत और टिकाऊ।",
-    descEn: "Virgin aluminum heavy base, safe and durable."
+    descHi: "वर्जिन एल्युमिनियम बेस, मजबूत और टिकाऊ।"
   },
   {
     id: 2,
@@ -125,8 +53,7 @@ const INITIAL_PRODUCTS = [
     badgeHi: "22% छूट",
     badgeEn: "22% OFF",
     image: "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80",
-    descHi: "3-लेयर स्टील बेस, कूल-टच हैंडल के साथ।",
-    descEn: "3-layer heavy steel base with cool-touch handles."
+    descHi: "3-लेयर स्टील बेस, कूल-टच हैंडल के साथ।"
   },
   {
     id: 3,
@@ -141,8 +68,7 @@ const INITIAL_PRODUCTS = [
     badgeHi: "वज़न अनुसार",
     badgeEn: "By Weight",
     image: "https://images.unsplash.com/photo-1607344645866-009c320b5ab8?w=500&auto=format&fit=crop&q=80",
-    descHi: "कलई युक्त शुद्ध पीतल, तोलाई के अनुसार बिकने वाला।",
-    descEn: "Pure traditional brass vessel, priced per kilogram."
+    descHi: "कलई युक्त शुद्ध पीतल, तोलाई के अनुसार बिकने वाला।"
   },
   {
     id: 4,
@@ -157,8 +83,7 @@ const INITIAL_PRODUCTS = [
     badgeHi: "तोलाई भाव",
     badgeEn: "By Weight",
     image: "https://images.unsplash.com/photo-1610557892470-55d9e80c0bce?w=500&auto=format&fit=crop&q=80",
-    descHi: "सदाबहार भारी गेज स्टील, किलो के भाव से।",
-    descEn: "Mirror polish heavy gauge steel sold per kilogram."
+    descHi: "सदाबहार भारी गेज स्टील, किलो के भाव से।"
   },
   {
     id: 5,
@@ -172,8 +97,7 @@ const INITIAL_PRODUCTS = [
     badgeHi: "हॉट डील",
     badgeEn: "Hot Deal",
     image: "https://images.unsplash.com/photo-1584269600464-37b1b58a9fe7?w=500&auto=format&fit=crop&q=80",
-    descHi: "4.5mm मोटा बेस, गैस स्टोव के लिए उत्तम।",
-    descEn: "4.5mm heavy gauge base, compatible with gas stoves."
+    descHi: "4.5mm मोटा बेस, गैस स्टोव के लिए उत्तम।"
   },
   {
     id: 6,
@@ -187,16 +111,12 @@ const INITIAL_PRODUCTS = [
     badgeHi: "पॉपुलर",
     badgeEn: "Popular",
     image: "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=500&auto=format&fit=crop&q=80",
-    descHi: "लेड-फ्री चमकीले प्रीमियम पारदर्शी ग्लास।",
-    descEn: "Lead-free crystal clear water and juice tumblers."
+    descHi: "लेड-फ्री चमकीले प्रीमियम पारदर्शी ग्लास।"
   }
 ];
 
 export default function App() {
   const [lang, setLang] = useState('hi');
-  const t = TRANSLATIONS[lang] || TRANSLATIONS['hi'];
-  
-  // 1. Virtual Market Entrance Screen
   const [showMarketEntrance, setShowMarketEntrance] = useState(true);
 
   const [products, setProducts] = useState(INITIAL_PRODUCTS);
@@ -205,6 +125,11 @@ export default function App() {
   const [cart, setCart] = useState([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
+
+  // Customer Contact & Delivery Details
+  const [customerName, setCustomerName] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerAddress, setCustomerAddress] = useState('');
 
   // Scrap Exchange & Bargain Less
   const [isExchangeActive, setIsExchangeActive] = useState(false);
@@ -216,7 +141,7 @@ export default function App() {
     return saved ? JSON.parse(saved) : DEFAULT_SCRAP_RATES;
   });
 
-  // Admin Profile & Security State
+  // Admin Profile & Store Info
   const [adminProfile, setAdminProfile] = useState(() => {
     const saved = localStorage.getItem('sgc_admin_profile');
     return saved ? JSON.parse(saved) : {
@@ -228,14 +153,24 @@ export default function App() {
     };
   });
 
+  // Soundbox Scanner Upload / UPI Settings
+  const [upiSettings, setUpiSettings] = useState(() => {
+    const saved = localStorage.getItem('sgc_upi_settings');
+    return saved ? JSON.parse(saved) : {
+      upiId: '8307465719@upi',
+      merchantName: 'Radhe Shyam',
+      soundboxScannerImage: '' // Custom Soundbox / BharatPe QR Image
+    };
+  });
+
+  // Admin Security / PIN
   const [savedOwnerPin, setSavedOwnerPin] = useState(() => {
     return localStorage.getItem('sgc_owner_pin') || '1234';
   });
-
   const [adminPin, setAdminPin] = useState('');
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
-  
-  // OTP Reset States
+
+  // OTP Reset Flow
   const [isForgotPinOpen, setIsForgotPinOpen] = useState(false);
   const [otpStep, setOtpStep] = useState(1);
   const [generatedOtp, setGeneratedOtp] = useState('');
@@ -245,10 +180,9 @@ export default function App() {
   const [adminTab, setAdminTab] = useState('ADD');
   const [editingProduct, setEditingProduct] = useState(null);
 
-  const [upiSettings, setUpiSettings] = useState({
-    upiId: '8307465719@upi',
-    merchantName: 'Radhe Shyam'
-  });
+  // File & Camera input refs for Admin
+  const galleryInputRef = useRef(null);
+  const cameraInputRef = useRef(null);
 
   const [categoriesList, setCategoriesList] = useState([
     "कुकर", "कड़ाही", "तवा", "डिब्बे", "गिलास", "क्रॉकरी", "कटलरी", "गिफ्ट आईटम", "तोलाई बर्तन (Per KG)"
@@ -306,7 +240,10 @@ export default function App() {
       .then(res => res.json())
       .then(data => {
         if (data) {
-          if (data.upiId) setUpiSettings(data);
+          if (data.upiId) {
+            setUpiSettings(prev => ({ ...prev, ...data }));
+            localStorage.setItem('sgc_upi_settings', JSON.stringify({ ...upiSettings, ...data }));
+          }
           if (data.ownerPin) {
             setSavedOwnerPin(data.ownerPin);
             localStorage.setItem('sgc_owner_pin', data.ownerPin);
@@ -341,9 +278,35 @@ export default function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...upiSettings, ownerPin: savedOwnerPin, adminProfile })
       });
-      alert(lang === 'hi' ? "✓ प्रोफाइल विवरण सफलतापूर्वक सेव हो गए!" : "✓ Profile details updated!");
+      alert("✓ दुकान व मालिक का प्रोफाइल विवरण सुरक्षित हो गया!");
     } catch (err) {
       alert("Profile save error!");
+    }
+  };
+
+  const handleSaveUpiAndScanner = async (e) => {
+    e.preventDefault();
+    localStorage.setItem('sgc_upi_settings', JSON.stringify(upiSettings));
+    try {
+      await fetch(`${apiBase}/api/settings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...upiSettings, ownerPin: savedOwnerPin, adminProfile })
+      });
+      alert("✓ UPI ID व साउंडबॉक्स स्कैनर सफलतापूर्वक सेव हो गया!");
+    } catch (err) {
+      alert("Settings save error!");
+    }
+  };
+
+  const handleSoundboxScannerUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUpiSettings(prev => ({ ...prev, soundboxScannerImage: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -357,7 +320,7 @@ export default function App() {
   const handleVerifyOtpAndReset = (e) => {
     e.preventDefault();
     if (enteredOtp !== generatedOtp && enteredOtp !== '9999') {
-      alert("❌ गलत OTP! कृपया सही 4-अंकों का कोड डालें।");
+      alert("❌ गलत OTP! कृपया सही कोड डालें।");
       return;
     }
     if (!newResetPin || newResetPin.length < 4) {
@@ -371,7 +334,18 @@ export default function App() {
     setOtpStep(1);
     setEnteredOtp('');
     setNewResetPin('');
-    alert(`✓ आपका नया पिन सफलतापूर्वक सेट हो गया: ${newResetPin}\nअब आप नए पिन से लॉगिन कर सकते हैं।`);
+    alert(`✓ आपका नया पिन सेट हो गया: ${newResetPin}`);
+  };
+
+  const handleImageFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setNewItem(prev => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const getCatLabel = (cat) => {
@@ -424,52 +398,162 @@ export default function App() {
 
   const handleCheckout = async () => {
     if (cart.length === 0) return;
-    try {
-      const scrapBreakdown = isExchangeActive && totalScrapDeduction > 0
-        ? scrapItems.filter(s => Number(s.weight) > 0).map(s => `${scrapRates[s.metal]?.hi} (${s.weight} kg @ ₹${scrapRates[s.metal]?.rate}/kg)`).join(', ')
-        : null;
 
+    const billNumber = `SGC-${new Date().getFullYear()}-${Date.now().toString().slice(-5)}`;
+    const billDate = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'long', year: 'numeric' });
+    const billTime = new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
+
+    const scrapBreakdown = isExchangeActive && totalScrapDeduction > 0
+      ? scrapItems.filter(s => Number(s.weight) > 0).map(s => `${scrapRates[s.metal]?.hi} (${s.weight} kg @ ₹${scrapRates[s.metal]?.rate}/kg)`).join(', ')
+      : null;
+
+    try {
       const res = await fetch(`${apiBase}/api/checkout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: cart, totalAmount, rawSubtotal, totalScrapDeduction, bargainLess, scrapBreakdown })
+        body: JSON.stringify({ 
+          items: cart, 
+          totalAmount, 
+          rawSubtotal, 
+          totalScrapDeduction, 
+          bargainLess, 
+          scrapBreakdown,
+          customerName: customerName.trim() || 'काउंटर ग्राहक (Walk-in)',
+          customerPhone: customerPhone.trim() || 'N/A',
+          customerAddress: customerAddress.trim() || 'रतिया'
+        })
       });
       const data = await res.json();
-      if (data.success) {
-        setCheckoutData({ ...data, cartItems: [...cart], rawSubtotal, totalScrapDeduction, bargainLess, scrapBreakdown });
-      }
+      setCheckoutData({
+        ...data,
+        orderId: data.orderId || billNumber,
+        billNumber,
+        billDate,
+        billTime,
+        customerName: customerName.trim() || 'काउंटर ग्राहक (Walk-in)',
+        customerPhone: customerPhone.trim() || 'N/A',
+        customerAddress: customerAddress.trim() || 'रतिया / लोकल',
+        cartItems: [...cart],
+        rawSubtotal,
+        totalScrapDeduction,
+        bargainLess,
+        scrapBreakdown,
+        soundboxScannerImage: upiSettings.soundboxScannerImage || null
+      });
     } catch (err) {
-      alert("बिलिंग सर्वर से कनेक्ट नहीं हो सका!");
+      // Local fallback checkout
+      setCheckoutData({
+        orderId: billNumber,
+        billNumber,
+        billDate,
+        billTime,
+        customerName: customerName.trim() || 'काउंटर ग्राहक (Walk-in)',
+        customerPhone: customerPhone.trim() || 'N/A',
+        customerAddress: customerAddress.trim() || 'रतिया / लोकल',
+        totalAmount,
+        rawSubtotal,
+        totalScrapDeduction,
+        bargainLess,
+        scrapBreakdown,
+        cartItems: [...cart],
+        upiId: upiSettings.upiId,
+        merchantName: adminProfile.adminName,
+        soundboxScannerImage: upiSettings.soundboxScannerImage || null,
+        qrDataUrl: `https://api.qrserver.com/v1/create-qr-code/?size=250x250&color=7A0C0C&data=upi://pay?pa=${encodeURIComponent(upiSettings.upiId)}%26pn=${encodeURIComponent(adminProfile.adminName)}%26am=${totalAmount}%26cu=INR`
+      });
     }
   };
 
-  const shareOnWhatsApp = () => {
+  // WhatsApp Sending to Selected Shop Number
+  const handleSendToWhatsAppNumber = (targetPhone) => {
     if (!checkoutData) return;
     const itemsSummary = cart.map(i => {
-      const displayName = lang === 'hi' ? (i.nameHi || i.nameEn) : (i.nameEn || i.nameHi);
+      const displayName = i.nameHi || i.nameEn;
       const weightInfo = i.pricingType === 'weight' ? ` [${i.effectiveWeight} kg @ ₹${i.pricePerKg}/kg]` : '';
       return `• ${displayName}${weightInfo} (x${i.qty}) - ₹${i.price * i.qty}`;
     }).join('%0A');
 
-    const exchangeTxt = totalScrapDeduction > 0 ? `%0A----------------------------%0Aपुराने बर्तन एक्सचेंज छूट: -₹${totalScrapDeduction}` : '';
+    const exchangeTxt = totalScrapDeduction > 0 ? `%0A----------------------------%0Aपुराने बर्तन एक्सचेंज छूट: -₹${totalScrapDeduction}%0A(${checkoutData.scrapBreakdown || ''})` : '';
     const lessTxt = bargainLess > 0 ? `%0Aदुकान विशेष लेस / छूट: -₹${bargainLess}` : '';
 
-    const msg = `*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - पक्का पर्चा*%0A` +
-      `ऑर्डर नंबर: ${checkoutData.orderId}%0A` +
+    const msg = `*श्री गणेश क्रॉकरी एंड गिफ्ट हाउस - बिल (पर्चा)*%0A` +
+      `बिल नंबर: ${checkoutData.billNumber}%0A` +
+      `तारीख़: ${checkoutData.billDate} (${checkoutData.billTime})%0A` +
       `----------------------------%0A` +
-      `${itemsSummary}${exchangeTxt}${lessTxt}%0A` +
+      `*ग्राहक विवरण (Bill To):*%0A` +
+      `नाम: ${checkoutData.customerName}%0A` +
+      `फोन: ${checkoutData.customerPhone}%0A` +
+      `पता: ${checkoutData.customerAddress}%0A` +
       `----------------------------%0A` +
-      `*कुल भुगतान राशि: ₹${checkoutData.totalAmount}*%0A` +
-      `दुकान: ${adminProfile.marketLocation} | मो: ${adminProfile.primaryPhone}%0A` +
+      `*खरीदा गया सामान:*%0A${itemsSummary}` +
+      `${exchangeTxt}${lessTxt}%0A` +
+      `----------------------------%0A` +
+      `*कुल देय राशि: ₹${checkoutData.totalAmount}*%0A` +
+      `दुकान: ${adminProfile.marketLocation}%0A` +
+      `GSTIN: ${adminProfile.gstin}%0A` +
       `धन्यवाद! फिर पधारें 🙏`;
 
-    window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
+    window.open(`https://api.whatsapp.com/send?phone=91${targetPhone}&text=${msg}`, '_blank');
+  };
+
+  const handleAddItem = (e) => {
+    e.preventDefault();
+    if (!newItem.nameHi) {
+      alert("सामान का नाम ज़रूर भरें!");
+      return;
+    }
+
+    const finalCategory = isCustomCatMode ? (newItem.customCategory.trim() || "अन्य") : newItem.category;
+    if (!categoriesList.includes(finalCategory)) {
+      setCategoriesList(prev => [...prev, finalCategory]);
+    }
+
+    const isWeight = newItem.pricingType === 'weight';
+    const finalPrice = isWeight ? Number(newItem.pricePerKg) * Number(newItem.defaultWeight || 1) : Number(newItem.price);
+    const finalMrp = isWeight ? Number(newItem.mrpPerKg) * Number(newItem.defaultWeight || 1) : (Number(newItem.mrp) || finalPrice + 200);
+
+    const item = {
+      id: Date.now(),
+      nameHi: newItem.nameHi,
+      nameEn: newItem.nameEn || newItem.nameHi,
+      category: finalCategory,
+      company: newItem.company || "General",
+      pricingType: newItem.pricingType,
+      price: Math.round(finalPrice),
+      mrp: Math.round(finalMrp),
+      pricePerKg: isWeight ? Number(newItem.pricePerKg) : null,
+      mrpPerKg: isWeight ? Number(newItem.mrpPerKg) : null,
+      defaultWeight: isWeight ? Number(newItem.defaultWeight || 1.0) : null,
+      badgeHi: isWeight ? "वज़न अनुसार" : (newItem.badgeHi || "नया"),
+      badgeEn: isWeight ? "By Weight" : (newItem.badgeEn || "New"),
+      image: newItem.image || "https://images.unsplash.com/photo-1584990347449-399a9cf3e218?w=500&auto=format&fit=crop&q=80",
+      descHi: isWeight ? `₹${newItem.pricePerKg}/kg के हिसाब से तोलाई का सामान।` : "ताज़ा स्टॉक दुकान पर उपलब्ध है।"
+    };
+
+    const updated = [item, ...products];
+    setProducts(updated);
+    syncWithBackend(updated);
+
+    setNewItem({ nameHi: '', nameEn: '', category: 'कुकर', customCategory: '', company: '', pricingType: 'piece', price: '', mrp: '', pricePerKg: '', mrpPerKg: '', defaultWeight: 1.0, image: '', badgeHi: 'नया माल', badgeEn: 'New Arrival' });
+    setIsCustomCatMode(false);
+    alert("सामान सफलतापूर्वक दुकान में जुड़ गया!");
+  };
+
+  const handleDeleteProduct = (id, name) => {
+    if (window.confirm(`क्या आप सच में "${name}" को हटाना चाहते हैं?`)) {
+      const updated = products.filter(p => p.id !== id);
+      setProducts(updated);
+      setCart(prev => prev.filter(c => c.id !== id));
+      syncWithBackend(updated);
+    }
   };
 
   return (
     <div style={{ backgroundColor: '#F4EFEB', minHeight: '100vh', paddingBottom: '90px', fontFamily: 'system-ui, -apple-system, sans-serif', color: '#111' }}>
       
-      {/* 1. VIRTUAL MARKET ENTRANCE SCREEN */}
+      {/* ========================================================
+          A. VIRTUAL MARKET STORE ENTRANCE EXPERIENCE
+      ======================================================== */}
       {showMarketEntrance && (
         <div style={{
           position: 'fixed',
@@ -580,15 +664,9 @@ export default function App() {
       }}>
         <div style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ background: '#D4AF37', color: '#420202', fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px' }}>
-              {lang === 'hi' ? 'शुभ' : 'SHUBH'}
-            </span>
-            <span style={{ color: '#FDE047', fontSize: '12px', fontWeight: '900' }}>
-              {t.gstin}: {adminProfile.gstin}
-            </span>
-            <span style={{ background: '#D4AF37', color: '#420202', fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px' }}>
-              {lang === 'hi' ? 'लाभ' : 'LABH'}
-            </span>
+            <span style={{ background: '#D4AF37', color: '#420202', fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px' }}>शुभ</span>
+            <span style={{ color: '#FDE047', fontSize: '12px', fontWeight: '900' }}>GSTIN: {adminProfile.gstin}</span>
+            <span style={{ background: '#D4AF37', color: '#420202', fontSize: '11px', fontWeight: '900', padding: '2px 8px', borderRadius: '4px' }}>लाभ</span>
           </div>
 
           <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -603,13 +681,13 @@ export default function App() {
               onClick={() => setIsAdminOpen(true)}
               style={{ background: '#000000', border: '1.5px solid #D4AF37', color: '#FDE047', padding: '5px 10px', borderRadius: '12px', fontSize: '11px', cursor: 'pointer', fontWeight: '900' }}
             >
-              {t.ownerPanel}
+              🔐 {lang === 'hi' ? 'मालिक पैनल' : 'Owner Panel'}
             </button>
             <a 
               href={`tel:${adminProfile.primaryPhone.replace(/[^0-9]/g, '')}`}
               style={{ background: '#D4AF37', color: '#420202', padding: '5px 12px', borderRadius: '12px', fontSize: '11px', fontWeight: '900', textDecoration: 'none' }}
             >
-              {t.call}
+              📞 Call
             </a>
           </div>
         </div>
@@ -626,11 +704,11 @@ export default function App() {
 
           <div style={{ flex: 1 }}>
             <div style={{ display: 'inline-block', background: 'linear-gradient(180deg, #1E3A8A 0%, #0F172A 100%)', color: '#FDE047', border: '1.5px solid #FDE047', padding: '2px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: '900', boxShadow: '0 2px 8px rgba(0,0,0,0.4)' }}>
-              🚩 {t.tagline}
+              🚩 करण्डी वालों की बर्तनों की दुकान
             </div>
 
             <h1 style={{ margin: '5px 0 2px 0', fontSize: '22px', fontWeight: '900', color: '#FFFFFF', textShadow: '2px 2px 0px #000, 0 0 12px rgba(253, 224, 71, 0.4)', lineHeight: '1.2' }}>
-              {t.shopName}
+              श्री गणेश क्रॉकरी एंड गिफ्ट हाउस
             </h1>
 
             <div style={{ fontSize: '11px', color: '#FEF08A', fontWeight: '800', marginTop: '3px' }}>
@@ -645,17 +723,17 @@ export default function App() {
         <div style={{ background: 'linear-gradient(90deg, #FFE8B6 0%, #FFF3D6 100%)', border: '2px solid #D4AF37', borderRadius: '12px', padding: '10px 14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
           <div>
             <div style={{ fontSize: '13px', fontWeight: '900', color: '#6B0808' }}>
-              {t.exchangeBannerTitle}
+              🔄 पुराने बर्तन लाओ - नया सामान ले जाओ!
             </div>
             <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>
-              {t.exchangeBannerSub}
+              स्टील, एल्युमिनियम, पीतल, तांबे के पुराने बर्तन बाज़ार भाव पर बदलें
             </div>
           </div>
           <button 
             onClick={() => setIsCartOpen(true)}
             style={{ background: '#6B0808', color: '#FFF', border: 'none', padding: '6px 12px', borderRadius: '14px', fontSize: '11px', fontWeight: '900', cursor: 'pointer', whiteSpace: 'nowrap' }}
           >
-            ⚖️ {t.calculateExchange}
+            ⚖️ पुराना भाव जोड़ें
           </button>
         </div>
       </div>
@@ -664,7 +742,7 @@ export default function App() {
       <div style={{ maxWidth: '850px', margin: '0 auto', padding: '12px 16px 0 16px' }}>
         <input 
           type="text" 
-          placeholder={t.searchPlaceholder} 
+          placeholder="🔍 कुकर, कड़ाही, ब्रांड, डिब्बे सर्च करें..." 
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
           style={{ width: '100%', padding: '13px 16px', borderRadius: '12px', border: '2px solid #8F0F0F', backgroundColor: '#FFFFFF', color: '#000000', fontSize: '15px', fontWeight: '600', boxSizing: 'border-box' }}
@@ -677,7 +755,7 @@ export default function App() {
           onClick={() => setSelectedCat('All')}
           style={{ padding: '9px 18px', borderRadius: '20px', border: '2px solid #6B0808', fontSize: '13px', fontWeight: '800', cursor: 'pointer', whiteSpace: 'nowrap', backgroundColor: selectedCat === 'All' ? '#6B0808' : '#FFFFFF', color: selectedCat === 'All' ? '#FFFFFF' : '#6B0808' }}
         >
-          {t.allProducts} ({products.length})
+          {lang === 'hi' ? 'सभी सामान' : 'All Items'} ({products.length})
         </button>
         {categoriesList.map(cat => (
           <button 
@@ -742,7 +820,7 @@ export default function App() {
                     onClick={() => addToCart(item)}
                     style={{ width: '100%', background: '#6B0808', color: '#FFFFFF', border: 'none', padding: '10px', borderRadius: '8px', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}
                   >
-                    {t.addToOrder}
+                    + ऑर्डर में जोड़ें
                   </button>
                 </div>
               </div>
@@ -757,9 +835,9 @@ export default function App() {
           position: 'fixed', bottom: '16px', left: '16px', right: '16px', maxWidth: '500px', margin: '0 auto', background: '#6B0808', color: '#FFF', padding: '12px 18px', borderRadius: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', boxShadow: '0 6px 20px rgba(107,8,8,0.5)', zIndex: 99
         }}>
           <div>
-            <div style={{ fontSize: '11px', opacity: 0.9 }}>{totalItemsCount} {t.itemsSelected}</div>
+            <div style={{ fontSize: '11px', opacity: 0.9 }}>{totalItemsCount} सामान चुने गए</div>
             <div style={{ fontSize: '18px', fontWeight: '900' }}>
-              {t.totalAmount}: ₹{totalAmount} 
+              कुल राशि: ₹{totalAmount} 
               {(totalScrapDeduction > 0 || bargainLess > 0) && (
                 <span style={{ fontSize: '11px', color: '#FDE047', marginLeft: '6px' }}>
                   (-₹{totalScrapDeduction + bargainLess})
@@ -771,7 +849,7 @@ export default function App() {
             onClick={() => setIsCartOpen(true)}
             style={{ background: '#D4AF37', color: '#4A0505', border: 'none', padding: '10px 18px', borderRadius: '20px', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}
           >
-            {t.viewBill}
+            बिल व QR देखें ➔
           </button>
         </div>
       )}
@@ -779,48 +857,264 @@ export default function App() {
       {/* 8. CART & BILLING MODAL */}
       {isCartOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 100, display: 'flex', justifyContent: 'center', alignItems: 'flex-end' }}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '520px', maxHeight: '90vh', borderRadius: '20px 20px 0 0', padding: '20px', overflowY: 'auto' }}>
+          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '650px', maxHeight: '92vh', borderRadius: '20px 20px 0 0', padding: '20px', overflowY: 'auto' }}>
+            
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>{t.billSummary}</h2>
+              <h2 style={{ margin: 0, fontSize: '18px', fontWeight: '900', color: '#6B0808' }}>
+                {checkoutData ? '🧾 पक्का टैक्स बिल (Tax Invoice)' : 'दुकान का पर्चा (Bill Summary)'}
+              </h2>
               <button onClick={() => { setIsCartOpen(false); setCheckoutData(null); }} style={{ background: '#222222', color: '#FFFFFF', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '900', fontSize: '15px' }}>
                 ✕
               </button>
             </div>
 
+            {/* ========================================================
+                A. PROFESSIONAL CORPORATE BILL (MATCHING BILL.jpeg)
+            ======================================================== */}
             {checkoutData ? (
-              <div style={{ textAlign: 'center', padding: '10px 0' }}>
-                <span style={{ background: '#1B5E20', color: '#FFFFFF', padding: '5px 14px', borderRadius: '16px', fontSize: '12px', fontWeight: '900' }}>
-                  {t.orderNo}: {checkoutData.orderId}
-                </span>
-                <h3 style={{ margin: '14px 0 6px 0', fontSize: '18px', fontWeight: '900' }}>{t.scanToPay}</h3>
-                
-                <div style={{ padding: '12px', background: '#FFFFFF', display: 'inline-block', borderRadius: '16px', border: '3px solid #6B0808' }}>
-                  <img src={checkoutData.qrDataUrl} alt="UPI QR" style={{ width: '220px', height: '220px', display: 'block' }} />
-                </div>
-                <div style={{ margin: '12px 0', fontSize: '22px', fontWeight: '900', color: '#6B0808' }}>
-                  {t.totalAmount}: ₹{checkoutData.totalAmount}
-                </div>
-                
-                <div style={{ background: '#F8F4EC', padding: '8px 12px', borderRadius: '8px', marginBottom: '12px', fontSize: '12px', color: '#444' }}>
-                  खाता धारक: <strong>{adminProfile.adminName}</strong><br />
-                  UPI ID: <strong style={{ color: '#6B0808' }}>{checkoutData.upiId}</strong>
+              <div>
+                {/* Print Stylesheet */}
+                <style>{`
+                  @media print {
+                    body * { visibility: hidden; }
+                    #official-printable-invoice, #official-printable-invoice * { visibility: visible; }
+                    #official-printable-invoice { position: absolute; left: 0; top: 0; width: 100%; border: none !important; box-shadow: none !important; padding: 0 !important; }
+                    .no-print { display: none !important; }
+                  }
+                `}</style>
+
+                {/* --- THE INVOICE CONTAINER --- */}
+                <div id="official-printable-invoice" style={{
+                  background: '#FFFFFF',
+                  border: '2px solid #E2E8F0',
+                  borderRadius: '12px',
+                  padding: '24px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.06)',
+                  color: '#0F172A',
+                  fontFamily: 'system-ui, sans-serif'
+                }}>
+                  {/* INVOICE TOP HEADER */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #CBD5E1', paddingBottom: '16px' }}>
+                    <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                      <img 
+                        src="/logo.png" 
+                        onError={(e) => { e.target.src = '/logo.jpeg'; }} 
+                        alt="Logo" 
+                        style={{ width: '64px', height: '64px', borderRadius: '50%', border: '2px solid #D4AF37', objectFit: 'cover' }} 
+                      />
+                      <div>
+                        <div style={{ fontSize: '11px', color: '#B45309', fontWeight: '900', letterSpacing: '0.5px' }}>करण्डी वालों की बर्तनों की दुकान</div>
+                        <h2 style={{ margin: '2px 0 0 0', fontSize: '20px', fontWeight: '900', color: '#7A0C0C' }}>
+                          श्री गणेश क्रॉकरी एंड गिफ्ट हाउस
+                        </h2>
+                        <div style={{ fontSize: '12px', color: '#475569', marginTop: '2px' }}>
+                          {adminProfile.marketLocation}<br />
+                          मो: {adminProfile.primaryPhone}, {adminProfile.secondaryPhone} | GSTIN: <strong>{adminProfile.gstin}</strong>
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <h1 style={{ margin: 0, fontSize: '32px', fontWeight: '900', color: '#1E3A8A', letterSpacing: '1px' }}>BILL</h1>
+                      <div style={{ fontSize: '12px', color: '#64748B', fontWeight: '600', marginTop: '2px' }}>RETAIL INVOICE</div>
+                    </div>
+                  </div>
+
+                  {/* METADATA GRID: SUPPLIER & BUYER & BILL DETAILS */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', margin: '18px 0', fontSize: '13px' }}>
+                    {/* Buyer / Bill To */}
+                    <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '900', color: '#1E3A8A', textTransform: 'uppercase', marginBottom: '6px' }}>
+                        BILL TO / BUYER (ग्राहक का विवरण)
+                      </div>
+                      <div style={{ fontWeight: '900', fontSize: '15px', color: '#0F172A' }}>{checkoutData.customerName}</div>
+                      <div style={{ color: '#475569', marginTop: '3px' }}>📞 {checkoutData.customerPhone}</div>
+                      <div style={{ color: '#475569', marginTop: '2px' }}>📍 {checkoutData.customerAddress}</div>
+                    </div>
+
+                    {/* Bill Metadata Table */}
+                    <div style={{ border: '1px solid #E2E8F0', borderRadius: '8px', overflow: 'hidden' }}>
+                      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', borderBottom: '1px solid #E2E8F0', padding: '6px 10px', background: '#F8FAFC' }}>
+                        <span style={{ fontWeight: 'bold', color: '#64748B' }}>Bill No:</span>
+                        <strong style={{ color: '#7A0C0C' }}>{checkoutData.billNumber}</strong>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', borderBottom: '1px solid #E2E8F0', padding: '6px 10px' }}>
+                        <span style={{ fontWeight: 'bold', color: '#64748B' }}>Bill Date:</span>
+                        <span>{checkoutData.billDate}</span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '100px 1fr', padding: '6px 10px' }}>
+                        <span style={{ fontWeight: 'bold', color: '#64748B' }}>Time:</span>
+                        <span>{checkoutData.billTime}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ITEM DETAILS TABLE (MATCHING BLUE HEADER TABLE IN BILL.jpeg) */}
+                  <table style={{ width: '100%', borderCollapse: 'collapse', margin: '14px 0', fontSize: '13px' }}>
+                    <thead>
+                      <tr style={{ background: '#1E3A8A', color: '#FFFFFF', textAlign: 'left' }}>
+                        <th style={{ padding: '10px 12px', borderRadius: '6px 0 0 0' }}>DESCRIPTION (सामान)</th>
+                        <th style={{ padding: '10px 12px', textAlign: 'center' }}>QTY / WEIGHT</th>
+                        <th style={{ padding: '10px 12px', textAlign: 'right' }}>UNIT PRICE (₹)</th>
+                        <th style={{ padding: '10px 12px', textAlign: 'right', borderRadius: '0 6px 0 0' }}>AMOUNT (₹)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {checkoutData.cartItems?.map((item, idx) => (
+                        <tr key={idx} style={{ borderBottom: '1px solid #E2E8F0', background: idx % 2 === 0 ? '#FFFFFF' : '#F8FAFC' }}>
+                          <td style={{ padding: '10px 12px', fontWeight: 'bold', color: '#1E293B' }}>
+                            {item.nameHi || item.nameEn}
+                            {item.company && <span style={{ color: '#64748B', fontWeight: 'normal', fontSize: '11px' }}> ({item.company})</span>}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            {item.pricingType === 'weight' ? `${item.effectiveWeight} kg` : `${item.qty} pcs`}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                            ₹{item.pricingType === 'weight' ? item.pricePerKg : item.price}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: '900' }}>
+                            ₹{item.price * item.qty}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  {/* TOTALS & DEDUCTIONS BREAKDOWN */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', margin: '14px 0' }}>
+                    <div style={{ width: '280px', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#475569' }}>
+                        <span>Subtotal (सकल जोड़):</span>
+                        <strong>₹{checkoutData.rawSubtotal}</strong>
+                      </div>
+
+                      {checkoutData.totalScrapDeduction > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#15803D', fontWeight: 'bold' }}>
+                          <span>पुराने बर्तन एक्सचेंज छूट:</span>
+                          <span>-₹{checkoutData.totalScrapDeduction}</span>
+                        </div>
+                      )}
+
+                      {checkoutData.bargainLess > 0 && (
+                        <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#B45309', fontWeight: 'bold' }}>
+                          <span>विशेष लेस / छूट (Discount):</span>
+                          <span>-₹{checkoutData.bargainLess}</span>
+                        </div>
+                      )}
+
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderTop: '2px solid #0F172A', borderBottom: '2px solid #0F172A', marginTop: '6px', fontSize: '17px', fontWeight: '900', color: '#7A0C0C' }}>
+                        <span>TOTAL AMOUNT DUE:</span>
+                        <span>₹{checkoutData.totalAmount}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BOTTOM PAYMENT TERMS, PAYMENT QR & OFFICIAL SGC SEAL */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 140px', gap: '16px', borderTop: '1px solid #CBD5E1', paddingTop: '16px', alignItems: 'center' }}>
+                    
+                    {/* Terms & Soundbox Scanner Info */}
+                    <div>
+                      <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#1E3A8A', marginBottom: '4px' }}>
+                        ACCEPTED PAYMENT METHODS: UPI • CASH • BANK TRANSFER
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748B', lineHeight: '1.4' }}>
+                        • भुगतान हेतु ऊपर दिया गया साउंडबॉक्स / UPI स्कैनर इस्तेमाल करें।<br />
+                        • किसी भी निर्माण दोष के लिए 6 महीने की दुकान सेवा गारंटी मान्य है।<br />
+                        • <em>Thank you for shopping with Shri Ganesh Crockery!</em>
+                      </div>
+                    </div>
+
+                    {/* CIRCULAR AUTHENTIC SGC STAMP (DESIGNED ROUND SEAL) */}
+                    <div style={{ textAlign: 'center' }}>
+                      <div style={{
+                        width: '105px',
+                        height: '105px',
+                        borderRadius: '50%',
+                        border: '3px dashed #1E3A8A',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                        margin: '0 auto',
+                        color: '#1E3A8A',
+                        boxShadow: 'inset 0 0 8px rgba(30,58,138,0.2)'
+                      }}>
+                        <div style={{ fontSize: '8px', fontWeight: '900', letterSpacing: '0.5px' }}>SHRI GANESH</div>
+                        <div style={{ fontSize: '20px', fontWeight: '900', margin: '2px 0', color: '#7A0C0C', letterSpacing: '1px' }}>SGC</div>
+                        <div style={{ fontSize: '8px', fontWeight: 'bold' }}>RATIA • SEAL</div>
+                        <div style={{ fontSize: '7px', fontWeight: 'bold', marginTop: '2px', color: '#475569' }}>AUTH. SIGN</div>
+                      </div>
+                    </div>
+
+                  </div>
                 </div>
 
-                <a href={checkoutData.upiUrl} style={{ display: 'block', background: '#1B5E20', color: '#FFF', padding: '13px', borderRadius: '10px', textDecoration: 'none', fontWeight: '900', fontSize: '15px', marginBottom: '8px' }}>
-                  {t.payViaApp}
-                </a>
+                {/* --- ONLINE PAYMENT MODAL BELOW INVOICE (Soundbox QR or Dynamic QR) --- */}
+                <div className="no-print" style={{ background: '#F8FAFC', border: '2px solid #E2E8F0', borderRadius: '12px', padding: '18px', marginTop: '20px', textAlign: 'center' }}>
+                  <h3 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: '900', color: '#7A0C0C' }}>
+                    📱 स्कैन करके तुरंत भुगतान करें
+                  </h3>
+                  <p style={{ margin: '0 0 12px 0', fontSize: '12px', color: '#64748B' }}>
+                    {checkoutData.soundboxScannerImage ? "दुकान के साउंडबॉक्स स्कैनर से पे करें (Audio Confirmation आएगी):" : "GPay, PhonePe या Paytm से तुरंत स्कैन करें:"}
+                  </p>
 
-                <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                  <button onClick={shareOnWhatsApp} style={{ flex: 1, background: '#25D366', color: '#FFF', padding: '12px 8px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}>
-                    {t.shareWhatsApp}
-                  </button>
-                  <button onClick={() => window.print()} style={{ flex: 1, background: '#1E3A8A', color: '#FFF', padding: '12px 8px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}>
-                    {t.downloadReceipt}
+                  <div style={{ padding: '12px', background: '#FFFFFF', display: 'inline-block', borderRadius: '14px', border: '3px solid #7A0C0C' }}>
+                    {checkoutData.soundboxScannerImage ? (
+                      <img src={checkoutData.soundboxScannerImage} alt="Soundbox Standee Scanner" style={{ width: '220px', height: '220px', objectFit: 'contain', display: 'block' }} />
+                    ) : (
+                      <img src={checkoutData.qrDataUrl} alt="UPI QR" style={{ width: '220px', height: '220px', display: 'block' }} />
+                    )}
+                  </div>
+
+                  <div style={{ margin: '10px 0', fontSize: '20px', fontWeight: '900', color: '#7A0C0C' }}>
+                    कुल देय राशि: ₹{checkoutData.totalAmount}
+                  </div>
+
+                  {/* WHATSAPP TO 3 NUMBERS POPUP ACCORDION */}
+                  <div style={{ background: '#DCFCE7', border: '1.5px solid #86EFAC', borderRadius: '10px', padding: '12px', margin: '14px 0', textAlign: 'left' }}>
+                    <div style={{ fontSize: '13px', fontWeight: '900', color: '#166534', marginBottom: '8px' }}>
+                      📲 दुकान के किस नंबर पर WhatsApp पर्चा भेजना चाहते हैं?
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '8px' }}>
+                      {SHOP_WHATSAPP_NUMBERS.map((shopNum, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleSendToWhatsAppNumber(shopNum.number)}
+                          style={{
+                            background: '#16A34A',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            padding: '10px 8px',
+                            borderRadius: '8px',
+                            fontSize: '12px',
+                            fontWeight: '900',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'center',
+                            gap: '2px'
+                          }}
+                        >
+                          <span>{shopNum.label}</span>
+                          <span style={{ fontSize: '11px', opacity: 0.9 }}>📞 {shopNum.number}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* DOWNLOAD / PRINT INVOICE BUTTON */}
+                  <button 
+                    onClick={() => window.print()}
+                    style={{ width: '100%', background: '#1E3A8A', color: '#FFFFFF', padding: '14px', borderRadius: '10px', border: 'none', fontWeight: '900', fontSize: '15px', cursor: 'pointer', boxShadow: '0 4px 12px rgba(30,58,138,0.3)' }}
+                  >
+                    📥 यह पक्का बिल डाउनलोड / प्रिंट करें (Print / PDF)
                   </button>
                 </div>
+
               </div>
             ) : (
+              /* --- CART SCREEN BEFORE BILL GENERATION --- */
               <div>
+                {/* ITEMS LIST */}
                 {cart.map(item => (
                   <div key={`${item.id}-${item.effectiveWeight}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '2px solid #EEE' }}>
                     <div>
@@ -838,12 +1132,12 @@ export default function App() {
                   </div>
                 ))}
 
-                {/* Multiple Scrap Exchange */}
+                {/* Multiple Scrap Exchange Accordion */}
                 <div style={{ margin: '14px 0', padding: '12px', background: '#FFF8E7', borderRadius: '12px', border: '1.5px dashed #D4AF37' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <label style={{ fontSize: '13px', fontWeight: '900', color: '#6B0808', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
                       <input type="checkbox" checked={isExchangeActive} onChange={e => setIsExchangeActive(e.target.checked)} style={{ width: '16px', height: '16px', accentColor: '#6B0808' }} />
-                      🔄 {lang === 'hi' ? 'पुराने बर्तन एक्सचेंज (छूट पाएँ)' : 'Exchange Old Utensils'}
+                      🔄 पुराने बर्तन एक्सचेंज (छूट पाएँ)
                     </label>
                     {isExchangeActive && totalScrapDeduction > 0 && (
                       <span style={{ fontSize: '13px', fontWeight: '900', color: '#1B5E20' }}>-₹{totalScrapDeduction}</span>
@@ -873,7 +1167,7 @@ export default function App() {
                         );
                       })}
                       <button onClick={addScrapRow} style={{ background: '#6B0808', color: '#FFF', border: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' }}>
-                        {t.addAnotherScrap}
+                        + दूसरी धातु जोड़ें
                       </button>
                     </div>
                   )}
@@ -882,13 +1176,43 @@ export default function App() {
                 {/* Bargain Less Discount */}
                 <div style={{ margin: '12px 0', padding: '10px 12px', background: '#F0FDF4', borderRadius: '10px', border: '1.5px solid #86EFAC', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
-                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#166534', display: 'block' }}>💸 {t.bargainDiscount}</label>
+                    <label style={{ fontSize: '13px', fontWeight: '900', color: '#166534', display: 'block' }}>💸 विशेष छूट / लेस (Bargain Less)</label>
                     <span style={{ fontSize: '10px', color: '#15803D' }}>ग्राहक की मान-मनुहार / राउंड ऑफ़ लेस</span>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#166534' }}>-₹</span>
                     <input type="number" placeholder="0" value={bargainLessAmount} onChange={e => setBargainLessAmount(e.target.value)} style={{ width: '85px', padding: '6px 8px', borderRadius: '6px', border: '1.5px solid #166534', fontWeight: '900', fontSize: '14px', textAlign: 'right' }} />
                   </div>
+                </div>
+
+                {/* CUSTOMER BILL DETAILS FORM */}
+                <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #CBD5E1', margin: '14px 0' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '900', color: '#1E3A8A', marginBottom: '8px' }}>
+                    👤 बिल के लिए ग्राहक का विवरण (Customer Details):
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '8px' }}>
+                    <input 
+                      type="text" 
+                      placeholder="ग्राहक का नाम (Name)" 
+                      value={customerName} 
+                      onChange={e => setCustomerName(e.target.value)} 
+                      style={{ padding: '8px', borderRadius: '6px', border: '1px solid #94A3B8', fontSize: '13px' }}
+                    />
+                    <input 
+                      type="tel" 
+                      placeholder="मोबाइल नंबर (Phone)" 
+                      value={customerPhone} 
+                      onChange={e => setCustomerPhone(e.target.value)} 
+                      style={{ padding: '8px', borderRadius: '6px', border: '1px solid #94A3B8', fontSize: '13px' }}
+                    />
+                  </div>
+                  <input 
+                    type="text" 
+                    placeholder="पता / गाँव / गली (Address)" 
+                    value={customerAddress} 
+                    onChange={e => setCustomerAddress(e.target.value)} 
+                    style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #94A3B8', fontSize: '13px', boxSizing: 'border-box' }}
+                  />
                 </div>
 
                 {/* Summary */}
@@ -899,35 +1223,36 @@ export default function App() {
                   </div>
                   {totalScrapDeduction > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#1B5E20', fontWeight: 'bold', marginBottom: '4px' }}>
-                      <span>{t.oldUtensilDeduction}:</span>
+                      <span>पुराने बर्तनों की कुल छूट:</span>
                       <span>-₹{totalScrapDeduction}</span>
                     </div>
                   )}
                   {bargainLess > 0 && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#15803D', fontWeight: 'bold', marginBottom: '4px' }}>
-                      <span>विशेष लेस:</span>
+                      <span>विशेष लेस / छूट:</span>
                       <span>-₹{bargainLess}</span>
                     </div>
                   )}
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', fontWeight: '900', color: '#6B0808', borderTop: '1px solid #DDD', paddingTop: '6px' }}>
-                    <span>{t.totalAmount}:</span>
+                    <span>कुल राशि:</span>
                     <span>₹{totalAmount}</span>
                   </div>
                 </div>
 
                 <button onClick={handleCheckout} style={{ width: '100%', background: '#6B0808', color: '#FFF', padding: '14px', borderRadius: '10px', fontWeight: '900', border: 'none', cursor: 'pointer', fontSize: '15px' }}>
-                  {t.viewBill}
+                  🧾 पक्का बिल व भुगतान QR देखें ➔
                 </button>
               </div>
             )}
+
           </div>
         </div>
       )}
 
-      {/* 9. OWNER PANEL WITH PROFILE & OTP RESET */}
+      {/* 9. OWNER PANEL WITH CAMERA CAPTURE & SOUNDBOX QR UPLOAD */}
       {isAdminOpen && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.75)', zIndex: 110, display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '16px' }}>
-          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '500px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', padding: '24px', position: 'relative', border: '3px solid #6B0808', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
+          <div style={{ background: '#FFFFFF', width: '100%', maxWidth: '520px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '16px', padding: '24px', position: 'relative', border: '3px solid #6B0808', boxShadow: '0 10px 30px rgba(0,0,0,0.3)' }}>
             
             <button onClick={() => { setIsAdminOpen(false); setEditingProduct(null); setIsForgotPinOpen(false); }} style={{ position: 'absolute', top: '14px', right: '14px', background: '#111111', color: '#FFFFFF', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', fontWeight: '900', fontSize: '15px' }}>
               ✕
@@ -937,7 +1262,7 @@ export default function App() {
               <div>
                 {!isForgotPinOpen ? (
                   <div>
-                    <h2 style={{ margin: '0 0 10px 0', fontSize: '19px', color: '#6B0808', fontWeight: '900' }}>{t.ownerLoginTitle}</h2>
+                    <h2 style={{ margin: '0 0 10px 0', fontSize: '19px', color: '#6B0808', fontWeight: '900' }}>🔐 दुकान मालिक लॉगिन</h2>
                     <p style={{ fontSize: '13px', color: '#444', margin: '0 0 16px 0' }}>मालिक: <strong>{adminProfile.adminName}</strong> ({adminProfile.primaryPhone})</p>
                     <input 
                       type="password" 
@@ -957,7 +1282,7 @@ export default function App() {
                       }}
                       style={{ width: '100%', background: '#6B0808', color: '#FFFFFF', padding: '13px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '15px', cursor: 'pointer' }}
                     >
-                      {t.loginBtn} ➔
+                      लॉगिन करें ➔
                     </button>
 
                     <div style={{ textAlign: 'center', marginTop: '16px' }}>
@@ -1069,22 +1394,23 @@ export default function App() {
               <div>
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '16px', borderBottom: '2px solid #EEE', paddingBottom: '10px', overflowX: 'auto' }}>
                   <button onClick={() => setAdminTab('ADD')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'ADD' ? '#6B0808' : '#EEE', color: adminTab === 'ADD' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    {t.addNewTab}
+                    + नया सामान
                   </button>
                   <button onClick={() => setAdminTab('MANAGE')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'MANAGE' ? '#6B0808' : '#EEE', color: adminTab === 'MANAGE' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    {t.manageTab}
+                    ✏️ स्टॉक
                   </button>
                   <button onClick={() => setAdminTab('PROFILE')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'PROFILE' ? '#6B0808' : '#EEE', color: adminTab === 'PROFILE' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    {t.profileTab}
+                    👤 मालिक प्रोफाइल
                   </button>
                   <button onClick={() => setAdminTab('SETTINGS')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'SETTINGS' ? '#6B0808' : '#EEE', color: adminTab === 'SETTINGS' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    {t.settingsTab}
+                    ⚙️ QR व स्क्रैप
                   </button>
                   <button onClick={() => setAdminTab('STANDEE')} style={{ flex: 1, padding: '8px 4px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '11px', cursor: 'pointer', background: adminTab === 'STANDEE' ? '#6B0808' : '#EEE', color: adminTab === 'STANDEE' ? '#FFF' : '#333', whiteSpace: 'nowrap' }}>
-                    {t.standeeTab}
+                    🖨️ स्टैंडी
                   </button>
                 </div>
 
+                {/* TAB 1: ADD ITEM (WITH DIRECT CAMERA OPTION) */}
                 {adminTab === 'ADD' && (
                   <form onSubmit={handleAddItem}>
                     <label style={{ fontSize: '12px', fontWeight: '900', color: '#111', display: 'block', marginBottom: '4px' }}>सामान का नाम *</label>
@@ -1108,12 +1434,61 @@ export default function App() {
                       </select>
                     </div>
 
+                    {/* PHOTO INPUT WITH BOTH GALLERY AND LIVE CAMERA BUTTONS */}
+                    <div style={{ marginBottom: '14px', background: '#F8F4EC', padding: '10px', borderRadius: '8px', border: '2px dashed #6B0808' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '900', color: '#6B0808', display: 'block', marginBottom: '6px' }}>
+                        📷 सामान की फोटो (गैलरी या लाइव कैमरा):
+                      </label>
+                      
+                      {/* Hidden File Inputs */}
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        ref={galleryInputRef} 
+                        onChange={handleImageFileChange} 
+                        style={{ display: 'none' }} 
+                      />
+                      <input 
+                        type="file" 
+                        accept="image/*" 
+                        capture="environment" 
+                        ref={cameraInputRef} 
+                        onChange={handleImageFileChange} 
+                        style={{ display: 'none' }} 
+                      />
+
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button 
+                          type="button" 
+                          onClick={() => galleryInputRef.current?.click()}
+                          style={{ flex: 1, background: '#1E3A8A', color: '#FFF', border: 'none', padding: '9px 4px', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}
+                        >
+                          📁 गैलरी / फ़ाइल चुनें
+                        </button>
+                        <button 
+                          type="button" 
+                          onClick={() => cameraInputRef.current?.click()}
+                          style={{ flex: 1, background: '#7A0C0C', color: '#FFF', border: 'none', padding: '9px 4px', borderRadius: '6px', fontWeight: 'bold', fontSize: '12px', cursor: 'pointer' }}
+                        >
+                          📸 कैमरा से क्लिक करें
+                        </button>
+                      </div>
+
+                      {newItem.image && (
+                        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <img src={newItem.image} alt="Preview" style={{ width: '48px', height: '48px', borderRadius: '6px', objectFit: 'cover', border: '1px solid #333' }} />
+                          <span style={{ fontSize: '12px', color: '#1B5E20', fontWeight: 'bold' }}>✓ फोटो सेट हो गई!</span>
+                        </div>
+                      )}
+                    </div>
+
                     <button type="submit" style={{ width: '100%', background: '#1B5E20', color: '#FFFFFF', padding: '13px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '15px', cursor: 'pointer' }}>
                       + दुकान में सेव करें
                     </button>
                   </form>
                 )}
 
+                {/* TAB 2: MANAGE */}
                 {adminTab === 'MANAGE' && (
                   <div style={{ maxHeight: '420px', overflowY: 'auto' }}>
                     {products.map(item => (
@@ -1134,6 +1509,7 @@ export default function App() {
                   </div>
                 )}
 
+                {/* TAB 3: ADMIN PROFILE */}
                 {adminTab === 'PROFILE' && (
                   <form onSubmit={handleSaveProfile}>
                     <h3 style={{ margin: '0 0 10px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
@@ -1166,31 +1542,76 @@ export default function App() {
                   </form>
                 )}
 
+                {/* TAB 4: SOUNDBOX SCANNER UPLOAD & UPI / SCRAP SETTINGS */}
                 {adminTab === 'SETTINGS' && (
-                  <form onSubmit={handleSaveSettings}>
-                    <h3 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#6B0808', fontWeight: '900' }}>
-                      ⚖️ आज के पुराने बर्तन एक्सचेंज भाव (₹ / KG)
-                    </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
-                      {Object.entries(scrapRates).map(([key, val]) => (
-                        <div key={key}>
-                          <label style={{ fontSize: '11px', fontWeight: 'bold' }}>{val.hi.split(' ')[0]} (₹/kg)</label>
-                          <input type="number" value={val.rate} onChange={e => setScrapRates({ ...scrapRates, [key]: { ...val, rate: Number(e.target.value) } })} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1.5px solid #6B0808', fontWeight: '900', boxSizing: 'border-box' }} />
-                        </div>
-                      ))}
-                    </div>
+                  <div>
+                    {/* SECTION: SOUNDBOX SCANNER UPLOAD (OR OPTION) */}
+                    <form onSubmit={handleSaveUpiAndScanner} style={{ marginBottom: '20px', borderBottom: '2px dashed #DDD', paddingBottom: '16px' }}>
+                      <h3 style={{ margin: '0 0 6px 0', fontSize: '15px', color: '#6B0808', fontWeight: '900' }}>
+                        🔊 साउंडबॉक्स / भारतपे स्कैनर फोटो (Audio Alert QR)
+                      </h3>
+                      <p style={{ fontSize: '12px', color: '#666', margin: '0 0 10px 0', lineHeight: '1.4' }}>
+                        अपने BharatPe, Paytm Soundbox या GPay Business के स्टैंडी QR की फोटो यहाँ अपलोड करें। ग्राहक जब बिल बनाएगा, तो सीधे यही स्कैनर दिखेगा और आपके <strong>साउंडबॉक्स में तुरant आवाज़ आएगी</strong>!
+                      </p>
 
-                    <h3 style={{ margin: '10px 0 4px 0', fontSize: '14px', color: '#6B0808', fontWeight: '900' }}>
-                      💳 UPI ID सेटिंग
-                    </h3>
-                    <input type="text" value={upiSettings.upiId} onChange={e => setUpiSettings({ ...upiSettings, upiId: e.target.value })} style={{ width: '100%', padding: '9px', borderRadius: '6px', border: '2px solid #333', fontWeight: 'bold', marginBottom: '12px', boxSizing: 'border-box' }} required />
+                      <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '8px', border: '1.5px dashed #1E3A8A', marginBottom: '10px' }}>
+                        <input type="file" accept="image/*" onChange={handleSoundboxScannerUpload} style={{ fontSize: '12px', width: '100%' }} />
+                        {upiSettings.soundboxScannerImage && (
+                          <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <img src={upiSettings.soundboxScannerImage} alt="Scanner" style={{ width: '60px', height: '60px', objectFit: 'contain', border: '1px solid #CCC', borderRadius: '6px' }} />
+                            <div>
+                              <span style={{ fontSize: '12px', color: '#15803D', fontWeight: 'bold' }}>✓ साउंडबॉक्स स्कैनर सेट है</span>
+                              <br />
+                              <button 
+                                type="button" 
+                                onClick={() => setUpiSettings(prev => ({ ...prev, soundboxScannerImage: '' }))}
+                                style={{ background: 'none', border: 'none', color: '#B91C1C', fontSize: '11px', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}
+                              >
+                                स्कैनर हटाएं (डिफ़ॉल्ट UPI QR रखें)
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
 
-                    <button type="submit" style={{ width: '100%', background: '#1B5E20', color: '#FFFFFF', padding: '11px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer' }}>
-                      💾 भाव व UPI सेव करें
-                    </button>
-                  </form>
+                      <div style={{ textAlign: 'center', fontWeight: 'bold', color: '#888', margin: '6px 0', fontSize: '11px' }}>
+                        — अथवा (OR) अपनी UPI ID डालें —
+                      </div>
+
+                      <label style={{ fontSize: '12px', fontWeight: 'bold', display: 'block', marginBottom: '3px' }}>दुकान की UPI ID (VPA):</label>
+                      <input type="text" value={upiSettings.upiId} onChange={e => setUpiSettings({ ...upiSettings, upiId: e.target.value })} style={{ width: '100%', padding: '9px', borderRadius: '6px', border: '1.5px solid #333', fontWeight: 'bold', marginBottom: '12px', boxSizing: 'border-box' }} required />
+
+                      <button type="submit" style={{ width: '100%', background: '#1B5E20', color: '#FFFFFF', padding: '11px', borderRadius: '8px', border: 'none', fontWeight: '900', fontSize: '14px', cursor: 'pointer' }}>
+                        💾 स्कैनर व UPI आईडी सेव करें
+                      </button>
+                    </form>
+
+                    {/* SECTION: SCRAP RATES */}
+                    <form onSubmit={(e) => {
+                      e.preventDefault();
+                      localStorage.setItem('sgc_scrap_rates', JSON.stringify(scrapRates));
+                      alert("स्क्रैप भाव अपडेट हो गए!");
+                    }}>
+                      <h3 style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#6B0808', fontWeight: '900' }}>
+                        ⚖️ आज के पुराने बर्तन एक्सचेंज भाव (₹ / KG)
+                      </h3>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                        {Object.entries(scrapRates).map(([key, val]) => (
+                          <div key={key}>
+                            <label style={{ fontSize: '11px', fontWeight: 'bold' }}>{val.hi.split(' ')[0]} (₹/kg)</label>
+                            <input type="number" value={val.rate} onChange={e => setScrapRates({ ...scrapRates, [key]: { ...val, rate: Number(e.target.value) } })} style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1.5px solid #6B0808', fontWeight: '900', boxSizing: 'border-box' }} />
+                          </div>
+                        ))}
+                      </div>
+
+                      <button type="submit" style={{ width: '100%', background: '#6B0808', color: '#FFFFFF', padding: '9px', borderRadius: '6px', border: 'none', fontWeight: '900', fontSize: '13px', cursor: 'pointer' }}>
+                        💾 स्क्रैप भाव सेव करें
+                      </button>
+                    </form>
+                  </div>
                 )}
 
+                {/* TAB 5: COUNTER QR STANDEE */}
                 {adminTab === 'STANDEE' && (
                   <div style={{ textAlign: 'center' }}>
                     <div id="printable-standee" style={{ background: 'radial-gradient(circle, #7A0C0C 0%, #4A0505 100%)', color: '#FFF', padding: '24px 16px', borderRadius: '16px', border: '4px solid #D4AF37', boxShadow: '0 8px 24px rgba(0,0,0,0.3)', margin: '10px 0 16px 0' }}>
